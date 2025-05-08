@@ -1,0 +1,12 @@
+D:multistatus(xmlns:D="DAV:")
+  each entry, index in entries
+    D:response
+      D:href #{entry.href}
+      D:propstat
+        D:prop
+          D:getcontentlength #{entry.size}
+          D:getlastmodified #{entry.mtime}
+          D:resourcetype
+            if entry.isDirectory
+              D:collection
+        D:status HTTP/1.1 200 OK
