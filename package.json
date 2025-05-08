@@ -1,0 +1,20 @@
+{
+  "name": "stack-webdav",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {},
+  "keywords": [
+    "webdav",
+    "webdav-server"
+  ],
+  "author": "Arylo Yeung <arylo.open@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^9.26.0",
+    "koa": "^3.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.1.3"
+  }
+}
