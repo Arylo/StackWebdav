@@ -3,7 +3,7 @@ import { Middleware } from "koa";
 import Status from 'http-status';
 import getFilePath from '../utils/getFilePath';
 
-const head: Middleware = (ctx) => {
+const HEAD: Middleware = (ctx) => {
   const filePath = getFilePath(ctx)
   if (!filePath) {
     ctx.status = Status.NOT_FOUND
@@ -11,9 +11,11 @@ const head: Middleware = (ctx) => {
   }
   const stat = fs.statSync(filePath)
 
-  ctx.status = Status.OK
   ctx.set('Content-Length', (stat.isDirectory() ? 0 : stat.size).toString())
-  ctx.set('Content-Type', 'application/octet-stream')
+  if (stat.isFile()) {
+    ctx.set('Content-Type', 'application/octet-stream')
+  }
+  ctx.status = Status.OK
 }
 
-export default head
+export default HEAD

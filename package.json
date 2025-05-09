@@ -20,11 +20,15 @@
     "@types/lodash": "^4.17.16",
     "@types/node": "^20.17.45",
     "@types/pug": "^2.0.10",
+    "@types/supertest": "^6.0.3",
     "eslint": "^9.26.0",
     "glob": "^11.0.2",
+    "supertest": "^7.1.0",
     "ts-node": "^10.9.2",
     "tsdown": "^0.11.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.3",
+    "webdav-server": "^2.6.2"
   },
   "dependencies": {
     "http-status": "^2.1.0",

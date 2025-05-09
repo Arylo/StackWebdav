@@ -1,12 +1,14 @@
 export enum METHOD {
-  OPTIONS = 'OPTIONS',
   GET = 'GET',
   HEAD = 'HEAD',
   POST = 'POST',
   PUT = 'PUT',
-  DELETE = 'DELETE',
-  PROPFIND = 'PROPFIND',
   MKCOL = 'MKCOL',
-  LOCK = 'LOCK',
+  PROPFIND = 'PROPFIND',
+  OPTIONS = 'OPTIONS',
+  DELETE = 'DELETE',
   UNLOCK = 'UNLOCK',
+  COPY = 'COPY',
+  LOCK = 'LOCK',
+  MOVE = 'MOVE',
 }

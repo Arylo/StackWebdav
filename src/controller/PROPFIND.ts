@@ -2,11 +2,10 @@ import path from 'path'
 import fs from 'fs'
 import { Middleware } from "koa";
 import Status from 'http-status';
-import findUp from '../utils/findUp';
 import { renderInfoFile, renderInfoFolder } from '../template';
 import getFilePath from '../utils/getFilePath';
 
-const info: Middleware = (ctx) => {
+const PROPFIND: Middleware = (ctx) => {
   const targetPath = decodeURIComponent(ctx.url)
   const filePath = getFilePath(ctx)
   if (!filePath) {
@@ -28,7 +27,6 @@ const info: Middleware = (ctx) => {
         isDirectory: entryStat.isDirectory(),
       }
     })
-    console.log(entries)
     responseXML = renderInfoFolder(entries)
   } else {
     responseXML = renderInfoFile({
@@ -43,4 +41,4 @@ const info: Middleware = (ctx) => {
   ctx.set('Content-Type', 'application/xml')
 }
 
-export default info
+export default PROPFIND

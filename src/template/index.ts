@@ -8,13 +8,11 @@ const getTemplatePath = (templateName: string) => {
 }
 
 export const renderInfoFile = (entry: { href: string, size: number, mtime: string, isDirectory: boolean }) => {
-  const templateName = 'infoFile.pug'
-  const templatePath = getTemplatePath(templateName)
-  return pug.renderFile(templatePath, entry)
+  return renderInfoFolder([entry])
 }
 
 export const renderInfoFolder = (entries: { href: string, size: number, mtime: string, isDirectory: boolean }[]) => {
-  const templateName = 'infoFolder.pug'
+  const templateName = 'PROPFIND.pug'
   const templatePath = getTemplatePath(templateName)
   return pug.renderFile(templatePath, { entries })
 }

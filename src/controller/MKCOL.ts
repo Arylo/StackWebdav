@@ -4,7 +4,7 @@ import { Middleware } from "koa";
 import getFilePath, { getFolderPath } from "../utils/getFilePath";
 import Status from 'http-status';
 
-const createFolder: Middleware = (ctx, next) => {
+const MKCOL: Middleware = (ctx, next) => {
   const targetPath = decodeURIComponent(ctx.url)
   const folderPath = getFilePath(ctx)
   if (folderPath && fs.existsSync(folderPath)) {
@@ -20,4 +20,4 @@ const createFolder: Middleware = (ctx, next) => {
   }
 }
 
-export default createFolder
+export default MKCOL

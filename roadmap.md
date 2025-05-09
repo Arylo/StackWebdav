@@ -25,9 +25,10 @@
 - [x] HEAD File Info
 - [x] HEAD Folder Info
 - [x] Allowed Methods
-- [ ] Auth
+- [ ] Basic Auth
 
 ## Stack
 
 - [ ] Limit Folder Quota
-- [ ] Create File in next store while current store is full
+- [ ] Create File in next store while current store is no space
+- [ ] Multi User Auth
