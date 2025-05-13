@@ -4,14 +4,13 @@ import { Middleware } from "koa";
 import Status from 'http-status';
 import { renderInfoFile, renderInfoFolder } from '../template';
 import getFilePath from '../utils/getFilePath';
+import { nonFound } from './utils';
 
 const PROPFIND: Middleware = (ctx) => {
   const targetPath = decodeURIComponent(ctx.url)
   const filePath = getFilePath(ctx)
   if (!filePath) {
-    ctx.status = Status.NOT_FOUND
-    ctx.body = Status[Status.NOT_FOUND]
-    return
+    return nonFound(ctx)
   }
   const stat = fs.statSync(filePath)
 

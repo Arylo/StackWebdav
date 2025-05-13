@@ -16,5 +16,5 @@ export const renderInfoFile = (entry: { href: string, size: number, mtime: strin
 export const renderInfoFolder = (entries: { href: string, size: number, mtime: string, isDirectory: boolean }[]) => {
   const templateName = 'PROPFIND.pug'
   const templatePath = getTemplatePath(templateName)
-  return pug.renderFile(templatePath, { entries })
+  return pug.renderFile(templatePath, { entries, doctype: 'xml' })
 }

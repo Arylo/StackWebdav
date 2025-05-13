@@ -3,8 +3,6 @@ import fs from 'fs'
 import { Context } from "koa"
 import { ROOT_PATH } from '../constant'
 
-console.log(ROOT_PATH)
-
 const paths = [
   path.resolve(ROOT_PATH, 'dist'),
 ]

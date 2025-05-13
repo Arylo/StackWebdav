@@ -2,12 +2,12 @@ import fs from 'fs'
 import { Middleware } from "koa";
 import Status from 'http-status';
 import getFilePath from '../utils/getFilePath';
+import { nonFound } from './utils';
 
 const HEAD: Middleware = (ctx) => {
   const filePath = getFilePath(ctx)
   if (!filePath) {
-    ctx.status = Status.NOT_FOUND
-    return
+    return nonFound(ctx)
   }
   const stat = fs.statSync(filePath)
 
@@ -15,6 +15,7 @@ const HEAD: Middleware = (ctx) => {
   if (stat.isFile()) {
     ctx.set('Content-Type', 'application/octet-stream')
   }
+  ctx.body = ''
   ctx.status = Status.OK
 }
 
