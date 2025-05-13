@@ -1,9 +1,9 @@
 import path from 'path'
 import fs from 'fs'
 import { Context } from "koa"
-import findUp from "./findUp"
+import { ROOT_PATH } from '../constant'
 
-const ROOT_PATH = findUp('package.json', { cwd: __dirname }) as string
+console.log(ROOT_PATH)
 
 const paths = [
   path.resolve(ROOT_PATH, 'dist'),

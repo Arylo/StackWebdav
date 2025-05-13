@@ -1,9 +1,11 @@
 import path from "path"
 import pug from 'pug'
-import findUp from "../utils/findUp"
+import { findUpSync } from "find-up"
+import { ROOT_PATH } from "../constant"
 
 const getTemplatePath = (templateName: string) => {
-  const templatePath = path.resolve(findUp(templateName, { cwd: __dirname }) as string, templateName)
+  const folderPath = path.resolve(ROOT_PATH, 'src/template')
+  const templatePath = findUpSync(templateName, { cwd: folderPath }) as string
   return templatePath
 }
 
