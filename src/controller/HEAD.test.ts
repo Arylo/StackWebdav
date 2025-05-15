@@ -1,29 +1,92 @@
 import { test, expect, describe } from 'vitest'
+import Status from 'http-status';
 import supertest from 'supertest'
-import app from '../app'
-import { webdavCommonTest } from '../../test/test'
+import { createTestFile, createTestFolder, describeApp, testWebdavCommon } from '../../test/test'
+
+function initFiles () {
+  createTestFolder('folder')
+  createTestFile('index.js')
+  createTestFile('withFile/index.js')
+  createTestFile('withFiles/index.js')
+  createTestFile('withFiles/index.html', '<html></html>')
+  createTestFile('withFiles/length-4.txt', '1234')
+}
 
 describe('Basic Webdav', () => {
-  describe('Method HEAD', () => {
+  describeApp('Method HEAD', (serverAddress) => {
     describe('Folder', () => {
-      const actualServer = app.callback()
-      const st = supertest(actualServer).head('/')
-      webdavCommonTest(st)
-      test('should be status', async () => {
-        const status = await st.then((res) => res.status)
-        expect(status).toBe(200)
-      })
-    })
-    describe('head file', () => {
-      describe('File', () => {
-        const actualServer = app.callback()
-        const st = supertest(actualServer).head('/index.js')
-        webdavCommonTest(st)
-        test('should be status', async () => {
+      describe('Root folder path', () => {
+        const st = supertest(serverAddress).head('/')
+
+        testWebdavCommon(st)
+
+        test('should be status 200', async () => {
           const status = await st.then((res) => res.status)
-          expect(status).toBe(200)
+          expect(status).toBe(Status.OK)
+        })
+      })
+      describe('Sub folder path', () => {
+        const st = supertest(serverAddress).head('/folder/')
+
+        testWebdavCommon(st)
+
+        test('should be status 200', async () => {
+          const status = await st.then((res) => res.status)
+          expect(status).toBe(Status.OK)
+        })
+      })
+      describe('Non found folder path', () => {
+        const st = supertest(serverAddress).head('/nonFound/')
+
+        testWebdavCommon(st)
+
+        test('should be status 404', async () => {
+          const status = await st.then((res) => res.status)
+          expect(status).toBe(Status.NOT_FOUND)
         })
       })
     })
-  })
+    describe('File', () => {
+      describe('file in root path', () => {
+        const st = supertest(serverAddress).head('/index.js')
+
+        testWebdavCommon(st)
+
+        test('should be status 200', async () => {
+          const status = await st.then((res) => res.status)
+          expect(status).toBe(Status.OK)
+        })
+      })
+      describe('file in subfolder path', () => {
+        const st = supertest(serverAddress).head('/withFile/index.js')
+
+        testWebdavCommon(st)
+
+        test('should be status 200', async () => {
+          const status = await st.then((res) => res.status)
+          expect(status).toBe(Status.OK)
+        })
+      })
+      describe('Non found file in root path', () => {
+        const st = supertest(serverAddress).head('/nonFound.js')
+
+        testWebdavCommon(st)
+
+        test('should be status 404', async () => {
+          const status = await st.then((res) => res.status)
+          expect(status).toBe(Status.NOT_FOUND)
+        })
+      })
+      describe('Non found file in folder path', () => {
+        const st = supertest(serverAddress).head('/nonFound/index.js')
+
+        testWebdavCommon(st)
+
+        test('should be status 404', async () => {
+          const status = await st.then((res) => res.status)
+          expect(status).toBe(Status.NOT_FOUND)
+        })
+      })
+    })
+  }, { setup: initFiles })
 })

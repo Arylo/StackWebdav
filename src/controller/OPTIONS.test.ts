@@ -1,15 +1,13 @@
 import { test, expect, describe } from 'vitest'
 import supertest from 'supertest'
-import app from '../app'
-import { webdavCommonTest } from '../../test/test'
+import { describeApp, testWebdavCommon } from '../../test/test'
 
 describe('Basic Webdav', () => {
-  describe('Method OPTIONS', () => {
+  describeApp('Method OPTIONS', (serverAddress) => {
     describe('Path /', () => {
-      const actualServer = app.callback()
-      const st = supertest(actualServer).options('/')
+      const st = supertest(serverAddress).options('/')
 
-      webdavCommonTest(st)
+      testWebdavCommon(st)
 
       test('should exist content-length 0', async () => {
         const res = await st.then((res) => res)

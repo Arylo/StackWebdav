@@ -2,10 +2,10 @@ import path from 'path'
 import fs from 'fs'
 import { rimrafSync } from 'rimraf'
 import mime from 'mime'
-import { BaseStore, CreateOptions, GetOptions, StatResult, Store } from "./BaseStore"
+import { BaseStore, CreateOptions, GetOptions, StatResult } from "./BaseStore"
 
 export class LocalStore extends BaseStore {
-  constructor (webPath: Store['path'], options: { path: string, filter?: string }) {
+  constructor (webPath: string, options: { path: string, filter?: string }) {
     super()
     this.path = webPath
     this.device = {

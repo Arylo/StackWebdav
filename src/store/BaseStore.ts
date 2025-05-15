@@ -1,20 +1,6 @@
 import fs from 'fs'
 import { nanoid } from "nanoid"
 
-export interface Store {
-  id: string,
-  path: string,
-  device: {
-    type: 'local',
-    path: string,
-    filter?: string,
-  },
-}
-
-export interface AsyncLocalStorageStore {
-  stores: Store[],
-}
-
 export interface CreateOptions {
   type: 'file' | 'directory',
 }
@@ -31,9 +17,9 @@ export interface StatResult {
 }
 
 export abstract class BaseStore {
-  protected id!: Store['id']
-  protected path!: Store['path']
-  protected device!: Store['device']
+  protected id!: string
+  protected path!: string
+  protected device!: { type: string, path: string, filter?: string }
   constructor () {
     this.id = nanoid()
   }
