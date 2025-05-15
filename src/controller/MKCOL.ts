@@ -1,18 +1,16 @@
-import fs from 'fs'
-import path from 'path'
 import { Middleware } from "koa";
-import getFilePath, { getFolderPath } from "../utils/getFilePath";
 import Status from 'http-status';
+import getPassedStores from "../store/getPassedStores";
+import hasResource from "../store/hasResource";
 
-const MKCOL: Middleware = (ctx, next) => {
-  const targetPath = decodeURIComponent(ctx.url)
-  const folderPath = getFilePath(ctx)
-  if (folderPath && fs.existsSync(folderPath)) {
+const MKCOL: Middleware = async (ctx, next) => {
+  const stores = getPassedStores(ctx.url)
+  if (stores.length === 0 || await hasResource(ctx.url)) {
     ctx.status = Status.METHOD_NOT_ALLOWED
     return
   }
   try {
-    fs.mkdirSync(path.resolve(getFolderPath(), `.${targetPath}`), { recursive: true })
+    await stores[0].create(ctx.url, { type: 'directory' })
     ctx.status = Status.CREATED
   } catch (error) {
     console.error(error)

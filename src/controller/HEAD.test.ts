@@ -1,7 +1,8 @@
 import { test, expect, describe } from 'vitest'
 import Status from 'http-status';
 import supertest from 'supertest'
-import { createTestFile, createTestFolder, describeApp, testWebdavCommon } from '../../test/test'
+import { testWebdavCommon } from '../../test/common'
+import { createTestFile, createTestFolder, describeApp } from '../../test/store'
 
 function initFiles () {
   createTestFolder('folder')

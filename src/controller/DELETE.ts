@@ -1,10 +1,10 @@
 import { Middleware } from "koa";
 import { nonFound } from "./utils";
-import getFilePath from "../utils/getFilePath";
+import getResource from "../store/getResource";
 
 const DELETE: Middleware = (ctx, next) => {
-  const filePath = getFilePath(ctx)
-  if (!filePath) {
+  const resource = getResource(ctx.url)
+  if (!resource) {
     return nonFound(ctx)
   }
 }

@@ -1,23 +1,17 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
 import { nonFound } from './utils';
-import { getStores } from '../store';
+import getResource from "../store/getResource";
 
 const HEAD: Middleware = async (ctx) => {
-  const stores = getStores()
-  for (const store of stores) {
-    const isExist = await store.has(ctx.url)
-    if (!isExist) continue
-    const stat = await store.stat(ctx.url)
-    ctx.set('Content-Length', (stat.type === 'directory' ? 0 : stat.size).toString())
-    if (stat.type === 'file') {
-      ctx.set('Content-Type', stat.mime as string)
-    }
-    ctx.body = ''
-    ctx.status = Status.OK
-    return
+  const resource = await getResource(ctx.url)
+  if (!resource) return nonFound(ctx)
+  ctx.set('Content-Length', (resource.type === 'directory' ? 0 : resource.size).toString())
+  if (resource.type === 'file') {
+    ctx.set('Content-Type', resource.mime as string)
   }
-  return nonFound(ctx)
+  ctx.body = ''
+  ctx.status = Status.OK
 }
 
 export default HEAD
