@@ -2,12 +2,19 @@ import path from 'path'
 import fs from 'fs'
 import { rimraf } from 'rimraf'
 import mime from 'mime'
-import { BaseStore, CreateOptions, GetOptions, PropfindOptions, PropfindResult, StatResult, StatType } from "./BaseStorage"
+import {
+  BaseStore,
+  CreateOptions,
+  GetOptions,
+  PropfindOptions,
+  PropfindResult,
+  StatResult,
+  StatType,
+} from "./BaseStorage"
 
 export class LocalStorage extends BaseStore {
-  constructor (webPath: string, options: { path: string, filter?: string }) {
-    super()
-    this.path = webPath
+  constructor (mountPath: string, options: { path: string, filter?: string }) {
+    super(mountPath, options)
     this.device = {
       type: 'local',
       path: options.path,
@@ -88,6 +95,7 @@ export class LocalStorage extends BaseStore {
         size: stat.isFile() ? stat.size : 0,
         mime: mime.getType(targetPath),
         type: stat.isFile() ? StatType.File : StatType.Directory,
+        name: resourcePath === '/' ? '/' : path.basename(targetPath),
       }
       return targetPathStat
     }))

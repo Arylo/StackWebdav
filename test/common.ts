@@ -16,3 +16,10 @@ export const testWebdavCommon = (st: Test) => {
     expect(res.get('Allow')?.split(',').filter(Boolean)).toContain(res.request.method)
   })
 }
+
+export const testWebdavCommonResult = (st: Test) => {
+  test('should content-type is application/xml', async () => {
+    const res = await st.then((res) => res)
+    expect(res.get('Content-Type')).toBe('application/xml')
+  })
+}

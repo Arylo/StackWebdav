@@ -27,6 +27,7 @@ export interface PropfindOptions {
 
 interface PropfindResultItem extends StatResult {
   path: string,
+  name: string,
 }
 
 export type PropfindResult = PropfindResultItem[]
@@ -35,8 +36,14 @@ export abstract class BaseStore {
   protected id!: string
   protected path!: string
   protected device!: { type: string, path: string, filter?: string }
-  constructor () {
+  constructor (mountPath: string, options: { path: string, filter?: string }) {
     this.id = nanoid()
+    this.path = mountPath
+    this.device = {
+      type: 'unknown',
+      path: options.path,
+      filter: options.filter,
+    }
   }
   public getStoreInfo () {
     return {

@@ -6,11 +6,14 @@ const getTemplatePath = (templateName: string) => {
   return templatePath
 }
 
-export const renderInfoFile = (entry: { href: string, size: number, mtime: string, isDirectory: boolean }) => {
-  return renderInfoFolder([entry])
-}
-
-export const renderInfoFolder = (entries: { href: string, size: number, mtime: string, isDirectory: boolean }[]) => {
+export const renderPROPFIND = (entries: {
+  href: string,
+  size: number,
+  mtime: string,
+  isDirectory: boolean,
+  displayName?: string | null,
+  contentType?: string | null,
+}[]) => {
   const templateName = 'PROPFIND.pug'
   const templatePath = getTemplatePath(templateName)
   return pug.renderFile(templatePath, { entries, doctype: 'xml' })

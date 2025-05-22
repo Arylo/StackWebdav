@@ -1,3 +1,4 @@
+doctype xml
 d:multistatus(xmlns:d="DAV:")
   each entry in entries
     d:response
@@ -11,6 +12,6 @@ d:multistatus(xmlns:d="DAV:")
           d:getlastmodified #{entry.mtime}
           if entry.displayName
             d:displayname #{entry.displayName}
-          if entry.contentType
+          if !entry.isDirectory && entry.contentType
             d:getcontenttype #{entry.contentType}
         d:status HTTP/1.1 200 OK

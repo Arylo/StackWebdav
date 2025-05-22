@@ -1,52 +1,39 @@
-import path from 'path'
-import fs from 'fs'
 import { Middleware } from "koa";
 import Status from 'http-status';
-import { renderInfoFile, renderInfoFolder } from '../template';
-import getFilePath from '../utils/getFilePath';
-import { nonFound } from './utils';
+import { renderPROPFIND } from '../template';
+import { nonFound, nonStorage } from './utils';
+import StorageManager, { STATUS_MESSAGE } from '../storage/StorageManager';
 
-const PROPFIND: Middleware = (ctx) => {
-  const targetPath = decodeURIComponent(ctx.url)
-  const filePath = getFilePath(ctx)
-  if (!filePath) {
+const PROPFIND: Middleware = async (ctx) => {
+  const depthParam = ctx.get('DEPTH')
+  let depth = isNaN(Number(depthParam)) ? 0 : Number(depthParam)
+  if (![0, 1].includes(depth)) {
+    depth = 0
+  }
+  const [status, list] = await StorageManager.PROPFIND(ctx.url, { depth })
+  if (status === STATUS_MESSAGE.OK)  {
+    const entries = list.map((entry) => {
+      const isDirectory = entry.type === 'directory'
+      return {
+        href: isDirectory ? (!entry.path.endsWith('/') ? `${entry.path}/` : entry.path) : entry.path,
+        size: entry.size,
+        mtime: entry.mtime.toUTCString(),
+        isDirectory: isDirectory,
+        contentType: entry.mime,
+        displayName: entry.name,
+      }
+    })
+    ctx.body = renderPROPFIND(entries)
+    ctx.status = Status.MULTI_STATUS
+    ctx.set('Content-Type', 'application/xml')
+    return
+  }
+  if (status === STATUS_MESSAGE.NOT_STORAGE) {
+    return nonStorage(ctx)
+  }
+  if (status === STATUS_MESSAGE.NOT_FOUND) {
     return nonFound(ctx)
   }
-  const stat = fs.statSync(filePath)
-
-  let responseXML = ''
-  if (stat.isDirectory()) {
-    let depth = ctx.get('DEPTH') ? Number(ctx.get('DEPTH')) : 0
-    if (![0, 1].includes(depth)) {
-      depth = 0
-    }
-    if (depth === 0) {
-      responseXML = renderInfoFolder([])
-    } else {
-      const entries = fs.readdirSync(filePath).map((name) => {
-        const entryPath = path.join(filePath, name)
-        const entryStat = fs.statSync(entryPath)
-        return {
-          href: path.join(targetPath, name),
-          size: entryStat.isDirectory() ? 0 : entryStat.size,
-          mtime: entryStat.mtime.toUTCString(),
-          isDirectory: entryStat.isDirectory(),
-        }
-      })
-      responseXML = renderInfoFolder(entries)
-    }
-    ctx.set('DEPTH', depth.toString())
-  } else {
-    responseXML = renderInfoFile({
-      href: targetPath,
-      size: stat.size,
-      mtime: stat.mtime.toUTCString(),
-      isDirectory: stat.isDirectory(),
-    })
-  }
-  ctx.body = responseXML
-  ctx.status = Status.MULTI_STATUS
-  ctx.set('Content-Type', 'application/xml')
 }
 
 export default PROPFIND
