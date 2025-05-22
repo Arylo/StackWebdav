@@ -2,7 +2,7 @@ import { test, expect, describe } from 'vitest'
 import Status from 'http-status';
 import supertest from 'supertest'
 import { testWebdavCommon } from '../../test/common'
-import { createTestFile, createTestFolder, describeApp } from '../../test/store'
+import { createTestFile, createTestFolder, describeApp } from '../../test/storage'
 
 function initFiles () {
   createTestFolder('folder')

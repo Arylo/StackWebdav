@@ -9,12 +9,27 @@ export interface GetOptions {
   end: number,
 }
 
+export enum StatType {
+  File = 'file',
+  Directory = 'directory',
+}
+
 export interface StatResult {
   mtime: Date,
   size: number,
   mime: string | null,
-  type: 'file' | 'directory'
+  type: StatType,
 }
+
+export interface PropfindOptions {
+  depth: number,
+}
+
+interface PropfindResultItem extends StatResult {
+  path: string,
+}
+
+export type PropfindResult = PropfindResultItem[]
 
 export abstract class BaseStore {
   protected id!: string
@@ -30,20 +45,20 @@ export abstract class BaseStore {
       device: this.device,
     }
   }
-  public check (targetPath: string) {
-    return decodeURIComponent(targetPath).startsWith(this.path) // && this.device.filter
+  public check (resourcePath: string) {
+    return decodeURIComponent(resourcePath).startsWith(this.path) // && this.device.filter
   }
-  public abstract COPY (targetPath: string): Promise<boolean>
-  public abstract DELETE (targetPath: string): Promise<boolean>
-  public abstract GET (targetPath: string, options: GetOptions): Promise<fs.ReadStream | undefined>
-  public abstract HEAD (targetPath: string): Promise<StatResult | undefined>
-  public abstract LOCK (targetPath: string): Promise<boolean>
-  public abstract MKCOL (targetPath: string): Promise<boolean>
-  public abstract MOVE (targetPath: string): Promise<boolean>
-  public abstract POST (targetPath: string): Promise<boolean>
-  public abstract PROPFIND (targetPath: string): Promise<boolean | undefined>
-  public abstract PUT (targetPath: string): Promise<boolean>
-  public abstract UNLOCK (targetPath: string): Promise<boolean>
-  public abstract create (targetPath: string, options: CreateOptions): Promise<boolean>
-  public abstract update (targetPath: string, content: string | fs.ReadStream): Promise<unknown>
+  public abstract COPY (resourcePath: string): Promise<boolean>
+  public abstract DELETE (resourcePath: string): Promise<boolean>
+  public abstract GET (resourcePath: string, options: GetOptions): Promise<fs.ReadStream | undefined>
+  public abstract HEAD (resourcePath: string): Promise<StatResult | undefined>
+  public abstract LOCK (resourcePath: string): Promise<boolean>
+  public abstract MKCOL (resourcePath: string): Promise<boolean>
+  public abstract MOVE (resourcePath: string): Promise<boolean>
+  public abstract POST (resourcePath: string): Promise<boolean>
+  public abstract PROPFIND (resourcePath: string, options: PropfindOptions): Promise<PropfindResult>
+  public abstract PUT (resourcePath: string): Promise<boolean>
+  public abstract UNLOCK (resourcePath: string): Promise<boolean>
+  public abstract create (resourcePath: string, options: CreateOptions): Promise<boolean>
+  public abstract update (resourcePath: string, content: string | fs.ReadStream): Promise<unknown>
 }

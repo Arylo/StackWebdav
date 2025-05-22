@@ -1,17 +1,24 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
-import { nonFound } from './utils';
-import getResource from "../storage/getResource";
+import StorageManager, { STATUS_MESSAGE } from "../storage/StorageManager";
+import { nonFound, nonStorage } from "./utils";
 
 const HEAD: Middleware = async (ctx) => {
-  const resource = await getResource(ctx.url)
-  if (!resource) return nonFound(ctx)
-  ctx.set('Content-Length', (resource.type === 'directory' ? 0 : resource.size).toString())
-  if (resource.type === 'file') {
-    ctx.set('Content-Type', resource.mime as string)
+  const [status, stat] = await StorageManager.HEAD(ctx.url)
+  if (status === STATUS_MESSAGE.OK) {
+    ctx.set('Content-Length', (stat.type === 'directory' ? 0 : stat.size).toString())
+    if (stat.type === 'file') {
+      ctx.set('Content-Type', stat.mime as string)
+    }
+    ctx.body = ''
+    ctx.status = Status.OK
   }
-  ctx.body = ''
-  ctx.status = Status.OK
+  if (status === STATUS_MESSAGE.NOT_STORAGE) {
+    return nonStorage(ctx)
+  }
+  if (status === STATUS_MESSAGE.NOT_FOUND) {
+    return nonFound(ctx)
+  }
 }
 
 export default HEAD

@@ -1,16 +1,18 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
-import getPassedStores from "../storage/getPassedStores";
-import hasResource from "../storage/hasResource";
+import StorageManager, { STATUS_MESSAGE } from "../storage/StorageManager";
+import { nonStorage } from "./utils";
 
 const MKCOL: Middleware = async (ctx, next) => {
-  const stores = getPassedStores(ctx.url)
-  if (stores.length === 0 || await hasResource(ctx.url)) {
-    ctx.status = Status.METHOD_NOT_ALLOWED
-    return
-  }
   try {
-    await stores[0].MKCOL(ctx.url)
+    const [status] = await StorageManager.MKCOL(ctx.url)
+    if (status === STATUS_MESSAGE.NOT_STORAGE) {
+      return nonStorage(ctx)
+    }
+    if (status == STATUS_MESSAGE.EXISTS) {
+      ctx.status = Status.METHOD_NOT_ALLOWED
+      return
+    }
     ctx.status = Status.CREATED
   } catch (error) {
     console.error(error)

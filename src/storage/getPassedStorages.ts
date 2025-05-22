@@ -1,7 +1,7 @@
 import { getStorages } from "./index"
 
-function getPassedStores (targetPath: string) {
+function getPassedStorages (targetPath: string) {
   return getStorages().filter((store) => store.check(targetPath))
 }
 
-export default getPassedStores
+export default getPassedStorages

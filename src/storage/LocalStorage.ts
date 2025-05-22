@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import { rimraf } from 'rimraf'
 import mime from 'mime'
-import { BaseStore, CreateOptions, GetOptions, StatResult } from "./BaseStorage"
+import { BaseStore, CreateOptions, GetOptions, PropfindOptions, PropfindResult, StatResult, StatType } from "./BaseStorage"
 
 export class LocalStorage extends BaseStore {
   constructor (webPath: string, options: { path: string, filter?: string }) {
@@ -17,12 +17,8 @@ export class LocalStorage extends BaseStore {
   public static createInst(...args: ConstructorParameters<typeof LocalStorage>) {
     return new LocalStorage(...args)
   }
-  public async has (targetPath: string) {
-    const currentPath = this.getResourcePath(targetPath)
-    return fs.existsSync(currentPath)
-  }
-  public async create(targetPath: string, options: CreateOptions): Promise<boolean> {
-    const currentPath = this.getResourcePath(targetPath)
+  public async create(resourcePath: string, options: CreateOptions): Promise<boolean> {
+    const currentPath = this.getResourcePath(resourcePath)
     switch (options.type) {
       case 'file':
         fs.mkdirSync(path.dirname(currentPath), { recursive: true })
@@ -32,34 +28,34 @@ export class LocalStorage extends BaseStore {
         return false
     }
   }
-  public async update(targetPath: string, content: string | fs.ReadStream) {
-    const currentPath = this.getResourcePath(targetPath)
+  public async update(resourcePath: string, content: string | fs.ReadStream) {
+    const currentPath = this.getResourcePath(resourcePath)
     if (typeof content === 'string') {
       fs.writeFileSync(currentPath, content, 'utf-8')
     }
   }
-  private getResourcePath (targetPath: string) {
-    return path.join(this.device.path, decodeURIComponent(targetPath))
+  private getResourcePath (resourcePath: string) {
+    return path.join(this.device.path, decodeURIComponent(resourcePath))
   }
 
-  public async COPY(targetPath: string) {
+  public async COPY(resourcePath: string) {
     return false
   }
-  public async DELETE(targetPath: string) {
-    const currentPath = this.getResourcePath(targetPath)
+  public async DELETE(resourcePath: string) {
+    const currentPath = this.getResourcePath(resourcePath)
     await rimraf(currentPath)
     return true
   }
-  public async GET(targetPath: string, options: GetOptions) {
-    const stat = await this.HEAD(targetPath)
+  public async GET(resourcePath: string, options: GetOptions) {
+    const stat = await this.HEAD(resourcePath)
     if (!stat) return undefined
     if (stat.type === 'directory') return undefined
-    const currentPath = this.getResourcePath(targetPath)
+    const currentPath = this.getResourcePath(resourcePath)
     const readStreamOptions = options ? { start: options.start, end: options.end } : undefined
     return fs.createReadStream(currentPath, readStreamOptions)
   }
-  public async HEAD(targetPath: string) {
-    const currentPath = this.getResourcePath(targetPath)
+  public async HEAD(resourcePath: string) {
+    const currentPath = this.getResourcePath(resourcePath)
     const isExist = fs.existsSync(currentPath)
     if (!isExist) return undefined
     const stat = await fs.promises.stat(currentPath)
@@ -67,31 +63,62 @@ export class LocalStorage extends BaseStore {
       mtime: stat.mtime,
       size: stat.isFile() ? stat.size : 0,
       mime: mime.getType(currentPath),
-      type: stat.isFile() ? 'file' : 'directory',
+      type: stat.isFile() ? StatType.File : StatType.Directory,
     }
     return result
   }
-  public async MKCOL(targetPath: string) {
-    const currentPath = this.getResourcePath(targetPath)
+  public async MKCOL(resourcePath: string) {
+    const currentPath = this.getResourcePath(resourcePath)
     await fs.promises.mkdir(currentPath, { recursive: true })
     return true
   }
-  public async MOVE(targetPath: string) {
+  public async MOVE(resourcePath: string) {
     return false
   }
-  public async POST(targetPath: string) {
+  public async POST(resourcePath: string) {
     return false
   }
-  public async PROPFIND(targetPath: string) {
+  private async PROPFINDInfos(resourcePaths: string[], depth: number) {
+    const list = await Promise.all(resourcePaths.map(async (resourcePath) => {
+      const targetPath = this.getResourcePath(resourcePath)
+      const stat = await fs.promises.stat(targetPath)
+      const targetPathStat =  {
+        path: resourcePath,
+        mtime: stat.mtime,
+        size: stat.isFile() ? stat.size : 0,
+        mime: mime.getType(targetPath),
+        type: stat.isFile() ? StatType.File : StatType.Directory,
+      }
+      return targetPathStat
+    }))
+    if (depth !== 0 && list.length !== 0) {
+      const paths = (await Promise.all(list
+        .filter((item) => item.type === StatType.Directory)
+        .map(async (item) => {
+          const filenames = await fs.promises.readdir(this.getResourcePath(item.path))
+          return filenames.map((filename) => path.join(item.path, filename))
+        })))
+        .flat()
+      const results = await this.PROPFINDInfos(paths, depth - 1)
+      list.push(...results)
+    }
+    return list
+  }
+  public async PROPFIND(resourcePath: string, options: PropfindOptions) {
+    // #region Current Path
+    const currentPath = this.getResourcePath(resourcePath)
+    const isExist = fs.existsSync(currentPath)
+    if (!isExist) return []
+    const list: PropfindResult = await this.PROPFINDInfos([resourcePath], options.depth)
+    return list
+  }
+  public async PUT(resourcePath: string) {
     return false
   }
-  public async PUT(targetPath: string) {
+  public async LOCK(resourcePath: string) {
     return false
   }
-  public async LOCK(targetPath: string) {
-    return false
-  }
-  public async UNLOCK(targetPath: string) {
+  public async UNLOCK(resourcePath: string) {
     return false
   }
 }

@@ -1,7 +1,7 @@
 import { test, expect, describe } from 'vitest'
 import supertest from 'supertest'
 import { testWebdavCommon } from '../../test/common'
-import { describeApp } from '../../test/store'
+import { describeApp } from '../../test/storage'
 
 describe('Basic Webdav', () => {
   describeApp('Method OPTIONS', (serverAddress) => {
