@@ -1,6 +1,6 @@
 import { Middleware } from "koa";
 import { nonFound } from "./utils";
-import getResource from "../store/getResource";
+import getResource from "../storage/getResource";
 
 const LOCK: Middleware = (ctx, next) => {
   const resource = getResource(ctx.url)

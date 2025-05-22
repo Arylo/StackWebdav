@@ -1,7 +1,7 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
-import getPassedStores from "../store/getPassedStores";
-import hasResource from "../store/hasResource";
+import getPassedStores from "../storage/getPassedStores";
+import hasResource from "../storage/hasResource";
 
 const MKCOL: Middleware = async (ctx, next) => {
   const stores = getPassedStores(ctx.url)
@@ -10,7 +10,7 @@ const MKCOL: Middleware = async (ctx, next) => {
     return
   }
   try {
-    await stores[0].create(ctx.url, { type: 'directory' })
+    await stores[0].MKCOL(ctx.url)
     ctx.status = Status.CREATED
   } catch (error) {
     console.error(error)

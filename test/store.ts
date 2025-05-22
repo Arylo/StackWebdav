@@ -3,15 +3,15 @@ import path from 'path'
 import fs from 'fs'
 import http from 'http'
 import { afterAll, describe } from 'vitest'
-import { addStore, getStores, withStore } from '../src/store'
+import { addStorage, getStorages, withStorages } from '../src/storage'
 import { nanoid } from 'nanoid'
 import { rimrafSync } from 'rimraf'
 import app from '../src/app'
-import { LocalStore } from '../src/store/LocalStore'
+import { LocalStorage } from '../src/storage/LocalStorage'
 import { AddressInfo } from 'net'
 
 export const getTestPath = (index = 0) => {
-  const stores = getStores()
+  const stores = getStorages()
   return stores[index].getStoreInfo().device.path
 }
 
@@ -31,8 +31,8 @@ export const createTestFile = (filePath: string, content = '') => {
 export const describeApp = (name: string, cb: (address: string) => unknown, { setup = () => {} } = {}) => {
   const id = nanoid()
   const testPath = path.resolve(os.tmpdir(), id)
-  withStore(() => {
-    addStore(new LocalStore('/', { path: testPath }))
+  withStorages(() => {
+    addStorage(new LocalStorage('/', { path: testPath }))
     setup()
     const server = http.createServer(app.callback()).listen()
     const addressInfo = server.address() as AddressInfo

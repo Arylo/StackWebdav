@@ -1,7 +1,7 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
 import { nonFound } from './utils';
-import getResource from "../store/getResource";
+import getResource from "../storage/getResource";
 
 const HEAD: Middleware = async (ctx) => {
   const resource = await getResource(ctx.url)

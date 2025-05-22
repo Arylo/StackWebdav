@@ -1,14 +1,15 @@
 import path from 'path'
 import fs from 'fs'
-import { getStores } from "../store"
+import { getStorages } from "../storage"
 
 const getFileInfo = (filepath: string) => {
-  const stores = getStores()
-  const filteredStores = stores.filter((store) => filepath.startsWith(store.path))
+  const storages = getStorages()
+  const filteredStores = storages.filter((storage) => filepath.startsWith(storage.getStoreInfo().path))
   for (const store of filteredStores) {
-    switch (store.device.type) {
+    const deviceInfo = store.getStoreInfo().device
+    switch (deviceInfo.type) {
       case 'local':
-        if (fs.existsSync(path.resolve(store.device.path, `.${filepath}`))) {
+        if (fs.existsSync(path.join(deviceInfo.path, filepath))) {
           return {
             path: filepath,
             store,

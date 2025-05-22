@@ -1,8 +1,8 @@
 import app from './app'
 import * as settings from './settings'
-import { withStore } from './store'
+import { withStorages } from './storage'
 
-withStore(() => {
+withStorages(() => {
   app.listen(settings.PORT, '0.0.0.0', () => {
     console.log(`Listening 0.0.0.0:${settings.PORT} ...`)
   })

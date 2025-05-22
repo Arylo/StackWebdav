@@ -33,12 +33,17 @@ export abstract class BaseStore {
   public check (targetPath: string) {
     return decodeURIComponent(targetPath).startsWith(this.path) // && this.device.filter
   }
-  public abstract has (targetPath: string): Promise<boolean>
+  public abstract COPY (targetPath: string): Promise<boolean>
+  public abstract DELETE (targetPath: string): Promise<boolean>
+  public abstract GET (targetPath: string, options: GetOptions): Promise<fs.ReadStream | undefined>
+  public abstract HEAD (targetPath: string): Promise<StatResult | undefined>
+  public abstract LOCK (targetPath: string): Promise<boolean>
+  public abstract MKCOL (targetPath: string): Promise<boolean>
+  public abstract MOVE (targetPath: string): Promise<boolean>
+  public abstract POST (targetPath: string): Promise<boolean>
+  public abstract PROPFIND (targetPath: string): Promise<boolean | undefined>
+  public abstract PUT (targetPath: string): Promise<boolean>
+  public abstract UNLOCK (targetPath: string): Promise<boolean>
   public abstract create (targetPath: string, options: CreateOptions): Promise<boolean>
   public abstract update (targetPath: string, content: string | fs.ReadStream): Promise<unknown>
-  public abstract delete (targetPath: string): Promise<boolean>
-  public abstract get (targetPath: string, options: GetOptions): Promise<fs.ReadStream>
-  public abstract stat (targetPath: string): Promise<StatResult>
-  public abstract lock (targetPath: string): Promise<unknown>
-  public abstract unlock (targetPath: string): Promise<unknown>
 }
