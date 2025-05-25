@@ -4,10 +4,10 @@ import { rimraf } from 'rimraf'
 import mime from 'mime'
 import {
   BaseStore,
-  CreateOptions,
   GetOptions,
   PropfindOptions,
   PropfindResult,
+  PUTOptions,
   StatResult,
   StatType,
 } from "./BaseStorage"
@@ -24,23 +24,6 @@ export class LocalStorage extends BaseStore {
   public static createInst(...args: ConstructorParameters<typeof LocalStorage>) {
     return new LocalStorage(...args)
   }
-  public async create(resourcePath: string, options: CreateOptions): Promise<boolean> {
-    const currentPath = this.getResourcePath(resourcePath)
-    switch (options.type) {
-      case 'file':
-        fs.mkdirSync(path.dirname(currentPath), { recursive: true })
-        fs.writeFileSync(currentPath, '', { encoding: 'utf-8' })
-        return true
-      default:
-        return false
-    }
-  }
-  public async update(resourcePath: string, content: string | fs.ReadStream) {
-    const currentPath = this.getResourcePath(resourcePath)
-    if (typeof content === 'string') {
-      fs.writeFileSync(currentPath, content, 'utf-8')
-    }
-  }
   private getResourcePath (resourcePath: string) {
     return path.join(this.device.path, decodeURIComponent(resourcePath))
   }
@@ -56,7 +39,7 @@ export class LocalStorage extends BaseStore {
   public async GET(resourcePath: string, options: GetOptions) {
     const stat = await this.HEAD(resourcePath)
     if (!stat) return undefined
-    if (stat.type === 'directory') return undefined
+    if (stat.type === StatType.Directory) return undefined
     const currentPath = this.getResourcePath(resourcePath)
     const readStreamOptions = options ? { start: options.start, end: options.end } : undefined
     return fs.createReadStream(currentPath, readStreamOptions)
@@ -80,9 +63,6 @@ export class LocalStorage extends BaseStore {
     return true
   }
   public async MOVE(resourcePath: string) {
-    return false
-  }
-  public async POST(resourcePath: string) {
     return false
   }
   private async PROPFINDInfos(resourcePaths: string[], depth: number) {
@@ -113,15 +93,23 @@ export class LocalStorage extends BaseStore {
     return list
   }
   public async PROPFIND(resourcePath: string, options: PropfindOptions) {
-    // #region Current Path
     const currentPath = this.getResourcePath(resourcePath)
     const isExist = fs.existsSync(currentPath)
     if (!isExist) return []
     const list: PropfindResult = await this.PROPFINDInfos([resourcePath], options.depth)
     return list
   }
-  public async PUT(resourcePath: string) {
-    return false
+  public async PUT(resourcePath: string, content: Buffer | string, options?: PUTOptions) {
+    const currentPath = this.getResourcePath(resourcePath)
+    await fs.promises.mkdir(path.dirname(currentPath), { recursive: true })
+    const fd = await fs.promises.open(currentPath, 'w')
+    let args: any[] = []
+    if (typeof options?.start === 'number' && typeof options?.end === 'number') {
+      args = [0, options.end - options.start, options.start]
+    }
+    await fd.writeFile(content, ...args)
+    await fd.close()
+    return true
   }
   public async LOCK(resourcePath: string) {
     return false

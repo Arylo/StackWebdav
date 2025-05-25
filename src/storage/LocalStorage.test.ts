@@ -47,14 +47,14 @@ describe('Storage', () => {
       test('Create file and check it', async () => {
         const prefix = `/${nanoid()}`
         expect(await storage.HEAD(`${prefix}/index.html`)).not.toBeDefined()
-        await storage.create(`${prefix}/index.html`, { type: 'file' })
+        await storage.PUT(`${prefix}/index.html`, '')
         expect(await storage.HEAD(`${prefix}/index.html`)).toBeDefined()
       })
       test('Create file under subfolder and check it', async () => {
         const prefix = `/${nanoid()}`
         expect(await storage.HEAD(`${prefix}/subfolder/index.html`)).not.toBeDefined()
         expect(await storage.HEAD(`${prefix}/subfolder/`)).not.toBeDefined()
-        await storage.create(`${prefix}/subfolder/index.html`, { type: 'file' })
+        await storage.PUT(`${prefix}/subfolder/index.html`, '')
         expect(await storage.HEAD(`${prefix}/subfolder/`)).toBeDefined()
         expect(await storage.HEAD(`${prefix}/subfolder/index.html`)).toBeDefined()
         expect(await storage.HEAD(`${prefix}/subfolder/index.html`)).toStrictEqual({
@@ -88,7 +88,7 @@ describe('Storage', () => {
         const prefix = `/${nanoid()}`
         expect(await storage.HEAD(`${prefix}/toBeDeleteFile/sample.txt`)).not.toBeDefined()
         expect(await storage.HEAD(`${prefix}/toBeDeleteFile`)).not.toBeDefined()
-        await storage.create(`${prefix}/toBeDeleteFile/sample.txt`, { type: 'file' })
+        await storage.PUT(`${prefix}/toBeDeleteFile/sample.txt`, '')
         expect(await storage.HEAD(`${prefix}/toBeDeleteFile`)).toBeDefined()
         expect(await storage.HEAD(`${prefix}/toBeDeleteFile/sample.txt`)).toBeDefined()
         await storage.DELETE(`${prefix}/toBeDeleteFile/sample.txt`)
@@ -97,18 +97,18 @@ describe('Storage', () => {
       })
       test('find files and folders', async () => {
         const prefix = `/${nanoid()}`
-        await storage.create(`${prefix}/find/aaa/bbb/ccc/ddd/index.html`, { type: 'file' })
-        await storage.create(`${prefix}/find/aaa/bbb/ccc/ddd`, { type: 'directory' })
-        await storage.create(`${prefix}/find/aaa/bbb/sample1.txt`, { type: 'file' })
-        await storage.create(`${prefix}/find/aaa/bbb/sample2.txt`, { type: 'file' })
-        await storage.create(`${prefix}/find/aaa/bbb/sample`, { type: 'directory' })
-        await storage.create(`${prefix}/find/aaa/sample.txt`, { type: 'file' })
-        await storage.create(`${prefix}/find/aaa/folder`, { type: 'directory' })
+        await storage.PUT(`${prefix}/find/aaa/bbb/ccc/ddd/index.html`, '')
+        await storage.MKCOL(`${prefix}/find/aaa/bbb/ccc/ddd`)
+        await storage.PUT(`${prefix}/find/aaa/bbb/sample1.txt`, '')
+        await storage.PUT(`${prefix}/find/aaa/bbb/sample2.txt`, '')
+        await storage.MKCOL(`${prefix}/find/aaa/bbb/sample`)
+        await storage.PUT(`${prefix}/find/aaa/sample.txt`, '')
+        await storage.MKCOL(`${prefix}/find/aaa/folder`)
 
         expect(await storage.PROPFIND(`${prefix}/find/aaa/bbb/ccc/ddd/index.html`, { depth: 0 })).toHaveLength(1)
         expect(await storage.PROPFIND(`${prefix}/find/aaa/bbb/ccc/ddd`, { depth: 0 })).toHaveLength(1)
-        expect(await storage.PROPFIND(`${prefix}/find/aaa/bbb/`, { depth: 1 })).toHaveLength(4)
-        expect(await storage.PROPFIND(`${prefix}/find/`, { depth: Infinity })).toHaveLength(9)
+        expect(await storage.PROPFIND(`${prefix}/find/aaa/bbb/`, { depth: 1 })).toHaveLength(5)
+        expect(await storage.PROPFIND(`${prefix}/find/`, { depth: Infinity })).toHaveLength(11)
       })
     })
   })

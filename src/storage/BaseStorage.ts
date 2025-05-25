@@ -1,9 +1,6 @@
-import fs from 'fs'
 import { nanoid } from "nanoid"
+import { Readable } from 'stream'
 
-export interface CreateOptions {
-  type: 'file' | 'directory',
-}
 export interface GetOptions {
   start: number,
   end: number,
@@ -32,6 +29,11 @@ interface PropfindResultItem extends StatResult {
 
 export type PropfindResult = PropfindResultItem[]
 
+export interface PUTOptions {
+  start?: number,
+  end?: number
+}
+
 export abstract class BaseStore {
   protected id!: string
   protected path!: string
@@ -57,15 +59,12 @@ export abstract class BaseStore {
   }
   public abstract COPY (resourcePath: string): Promise<boolean>
   public abstract DELETE (resourcePath: string): Promise<boolean>
-  public abstract GET (resourcePath: string, options: GetOptions): Promise<fs.ReadStream | undefined>
+  public abstract GET (resourcePath: string, options?: GetOptions): Promise<Readable | undefined>
   public abstract HEAD (resourcePath: string): Promise<StatResult | undefined>
   public abstract LOCK (resourcePath: string): Promise<boolean>
   public abstract MKCOL (resourcePath: string): Promise<boolean>
   public abstract MOVE (resourcePath: string): Promise<boolean>
-  public abstract POST (resourcePath: string): Promise<boolean>
   public abstract PROPFIND (resourcePath: string, options: PropfindOptions): Promise<PropfindResult>
-  public abstract PUT (resourcePath: string): Promise<boolean>
+  public abstract PUT (resourcePath: string, content: Buffer | string, options?: PUTOptions): Promise<boolean>
   public abstract UNLOCK (resourcePath: string): Promise<boolean>
-  public abstract create (resourcePath: string, options: CreateOptions): Promise<boolean>
-  public abstract update (resourcePath: string, content: string | fs.ReadStream): Promise<unknown>
 }

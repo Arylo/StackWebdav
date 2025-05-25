@@ -1,7 +1,6 @@
 export enum METHOD {
   GET = 'GET',
   HEAD = 'HEAD',
-  POST = 'POST',
   PUT = 'PUT',
   MKCOL = 'MKCOL',
   PROPFIND = 'PROPFIND',

@@ -8,7 +8,6 @@ import LOCK from './LOCK'
 import MKCOL from './MKCOL'
 import MOVE from './MOVE'
 import OPTIONS from './OPTIONS'
-import POST from './POST'
 import PROPFIND from './PROPFIND'
 import PUT from './PUT'
 import UNLOCK from './UNLOCK'
@@ -24,7 +23,6 @@ const controller = (): Middleware => (ctx, next) => {
     case METHOD.MKCOL: return MKCOL(ctx, next)
     case METHOD.MOVE: return MOVE(ctx, next)
     case METHOD.OPTIONS: return OPTIONS(ctx, next)
-    case METHOD.POST: return POST(ctx, next)
     case METHOD.PROPFIND: return PROPFIND(ctx, next)
     case METHOD.PUT: return PUT(ctx, next)
     case METHOD.UNLOCK: return UNLOCK(ctx, next)
