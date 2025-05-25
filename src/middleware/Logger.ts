@@ -7,7 +7,7 @@ export default () => {
     const startAt = Date.now()
     await next()
     const endAt = Date.now()
-    console.info(ctx.method, ctx.href, '......', `${endAt-startAt}ms`)
+    console.info(ctx.method, ctx.href, '......', `${endAt-startAt}ms`, ctx.status)
   }
   return middleware
 }
