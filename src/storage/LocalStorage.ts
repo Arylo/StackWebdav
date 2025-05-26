@@ -24,6 +24,13 @@ export class LocalStorage extends BaseStore {
   public static createInst(...args: ConstructorParameters<typeof LocalStorage>) {
     return new LocalStorage(...args)
   }
+  public static from (config: any) {
+    if (config.device !== 'local') return undefined
+    const inst = new LocalStorage('/', { path: undefined } as any)
+    inst.id = config.id
+    inst.device = config.device
+    return inst
+  }
   private getResourcePath (resourcePath: string) {
     return path.join(this.device.path, decodeURIComponent(resourcePath))
   }

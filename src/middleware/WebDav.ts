@@ -1,6 +1,6 @@
 import type { Middleware } from "koa";
 import { findUpSync } from 'find-up'
-import { METHOD } from "../controller/constant";
+import { METHOD } from "../controller/Webdav/constant";
 
 export default () => {
   const PROJECT_FILE_PATH = findUpSync('package.json') as string

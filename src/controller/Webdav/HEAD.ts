@@ -1,6 +1,6 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
-import StorageManager, { STATUS_MESSAGE } from "../storage/StorageManager";
+import StorageManager, { STATUS_MESSAGE } from "../../storage/StorageManager";
 import { nonFound, nonStorage } from "./utils";
 
 const HEAD: Middleware = async (ctx) => {

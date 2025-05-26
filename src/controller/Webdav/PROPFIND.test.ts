@@ -2,9 +2,9 @@ import { test, expect, describe } from 'vitest'
 import supertest from 'supertest'
 import Status from 'http-status';
 import { parseStringPromise } from 'xml2js'
-import { testWebdavCommon, testWebdavCommonResult } from '../../test/common'
-import { createTestFile, createTestFolder, describeApp } from "../../test/storage"
-import { getZone } from '../../test/xml';
+import { testWebdavCommon, testWebdavCommonResult } from '../../../test/common'
+import { createTestFile, createTestFolder, describeApp } from "../../../test/storage"
+import { getZone } from '../../../test/xml';
 
 function initFiles () {
   createTestFolder('folder')

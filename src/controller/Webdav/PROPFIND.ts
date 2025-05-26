@@ -1,8 +1,8 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
-import { renderPROPFIND } from '../template';
+import { renderPROPFIND } from '../../template';
 import { nonFound, nonStorage } from './utils';
-import StorageManager, { STATUS_MESSAGE } from '../storage/StorageManager';
+import StorageManager, { STATUS_MESSAGE } from '../../storage/StorageManager';
 
 const PROPFIND: Middleware = async (ctx) => {
   const depthParam = ctx.get('DEPTH')

@@ -1,6 +1,6 @@
 import { Middleware } from "koa";
 import { nonFound, nonStorage } from "./utils";
-import StorageManager, { STATUS_MESSAGE } from "../storage/StorageManager";
+import StorageManager, { STATUS_MESSAGE } from "../../storage/StorageManager";
 import Status from 'http-status';
 
 const DELETE: Middleware = async (ctx, next) => {

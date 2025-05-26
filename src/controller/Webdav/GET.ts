@@ -1,7 +1,7 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
 import { nonFound, nonStorage } from "./utils";
-import StorageManager, { STATUS_MESSAGE } from "../storage/StorageManager";
+import StorageManager, { STATUS_MESSAGE } from "../../storage/StorageManager";
 
 const GET: Middleware = async (ctx, next) => {
   const [status, content] = await StorageManager.GET(ctx.url)

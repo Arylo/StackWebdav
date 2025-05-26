@@ -1,4 +1,4 @@
-import { getStorages } from "./index"
+import { getStorages } from './utils'
 
 function getPassedStorages (targetPath: string) {
   return getStorages().filter((store) => store.check(targetPath))

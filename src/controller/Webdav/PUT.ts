@@ -1,5 +1,5 @@
 import { Middleware } from "koa";
-import StorageManager, { STATUS_MESSAGE } from "../storage/StorageManager";
+import StorageManager, { STATUS_MESSAGE } from "../../storage/StorageManager";
 import Status from 'http-status';
 import { nonStorage } from "./utils";
 

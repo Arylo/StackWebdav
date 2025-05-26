@@ -1,8 +1,8 @@
 import { test, expect, describe } from 'vitest'
 import Status from 'http-status';
 import supertest from 'supertest'
-import { testWebdavCommon } from '../../test/common'
-import { createTestFile, createTestFolder, describeApp } from '../../test/storage'
+import { testWebdavCommon } from '../../../test/common'
+import { createTestFile, createTestFolder, describeApp } from '../../../test/storage'
 
 function initFiles () {
   createTestFolder('folder')
@@ -14,20 +14,20 @@ function initFiles () {
 }
 
 describe('Basic Webdav', () => {
-  describeApp('Method DELETE', (serverAddress) => {
+  describeApp('Method HEAD', (serverAddress) => {
     describe('Folder', () => {
       describe('Root folder path', () => {
-        const st = supertest(serverAddress).delete('/')
+        const st = supertest(serverAddress).head('/')
 
         testWebdavCommon(st)
 
-        test('should be status 404', async () => {
+        test('should be status 200', async () => {
           const status = await st.then((res) => res.status)
-          expect(status).toBe(Status.NOT_FOUND)
+          expect(status).toBe(Status.OK)
         })
       })
       describe('Sub folder path', () => {
-        const st = supertest(serverAddress).delete('/folder/')
+        const st = supertest(serverAddress).head('/folder/')
 
         testWebdavCommon(st)
 
@@ -37,7 +37,7 @@ describe('Basic Webdav', () => {
         })
       })
       describe('Non found folder path', () => {
-        const st = supertest(serverAddress).delete('/nonFound/')
+        const st = supertest(serverAddress).head('/nonFound/')
 
         testWebdavCommon(st)
 
@@ -49,7 +49,7 @@ describe('Basic Webdav', () => {
     })
     describe('File', () => {
       describe('file in root path', () => {
-        const st = supertest(serverAddress).delete('/index.js')
+        const st = supertest(serverAddress).head('/index.js')
 
         testWebdavCommon(st)
 
@@ -59,7 +59,7 @@ describe('Basic Webdav', () => {
         })
       })
       describe('file in subfolder path', () => {
-        const st = supertest(serverAddress).delete('/withFile/index.js')
+        const st = supertest(serverAddress).head('/withFile/index.js')
 
         testWebdavCommon(st)
 
@@ -69,7 +69,7 @@ describe('Basic Webdav', () => {
         })
       })
       describe('Non found file in root path', () => {
-        const st = supertest(serverAddress).delete('/nonFound.js')
+        const st = supertest(serverAddress).head('/nonFound.js')
 
         testWebdavCommon(st)
 
@@ -79,7 +79,7 @@ describe('Basic Webdav', () => {
         })
       })
       describe('Non found file in folder path', () => {
-        const st = supertest(serverAddress).delete('/nonFound/index.js')
+        const st = supertest(serverAddress).head('/nonFound/index.js')
 
         testWebdavCommon(st)
 

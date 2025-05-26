@@ -1,6 +1,6 @@
 import { Middleware } from "koa";
 import Status from 'http-status';
-import StorageManager, { STATUS_MESSAGE } from "../storage/StorageManager";
+import StorageManager, { STATUS_MESSAGE } from "../../storage/StorageManager";
 import { nonStorage } from "./utils";
 
 const MKCOL: Middleware = async (ctx, next) => {
