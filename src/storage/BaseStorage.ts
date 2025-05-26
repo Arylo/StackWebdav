@@ -1,5 +1,6 @@
 import { nanoid } from "nanoid"
 import { Readable } from 'stream'
+import { isMatch } from 'matcher'
 
 export interface GetOptions {
   start: number,
@@ -55,7 +56,9 @@ export abstract class BaseStore {
     }
   }
   public check (resourcePath: string) {
-    return decodeURIComponent(resourcePath).startsWith(this.path) // && this.device.filter
+    const targetPath = decodeURIComponent(resourcePath)
+    return decodeURIComponent(resourcePath).startsWith(this.path) &&
+      (this.device.filter ? isMatch(targetPath, this.device.filter.split(',')) : true)
   }
   public abstract COPY (resourcePath: string): Promise<boolean>
   public abstract DELETE (resourcePath: string): Promise<boolean>

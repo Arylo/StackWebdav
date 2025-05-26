@@ -24,4 +24,5 @@
 - [ ] Limit Folder Quota
   - [ ] Create File in next store while current store is no space
 - [ ] Multi User Auth
-- [ ] Storage Config
+- [x] Storage Config
+- [x] Support filter storage
