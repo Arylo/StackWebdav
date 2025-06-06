@@ -49,13 +49,14 @@ const storages = new class {
       return
     }
     const content = fs.readFileSync(configPath, 'utf-8')
-    const { storages } = JSON.parse(content)
+    const { storages = [] } = JSON.parse(content)
+    const storageInstants = (storages as any[])
+      .map((storageConfig) => {
+        return LocalStorage.from(storageConfig)
+      })
+      .filter(Boolean) as BaseStore[]
     this.update({
-      storages: (storages as any[])
-        .map((storageConfig) => {
-          return LocalStorage.from(storageConfig)
-        })
-        .filter(Boolean) as BaseStore[],
+      storages: storageInstants,
     })
   }
   public getAll() {

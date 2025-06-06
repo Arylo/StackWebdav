@@ -1,13 +1,20 @@
 import type { Middleware } from "koa";
 import useragent from "useragent";
 
-const middleware = (options: { target: 'API' | 'DEVICE' }, mw: Middleware): Middleware => (ctx, next) => {
-  const { version, ...uaArgs } = useragent.is(ctx.headers['user-agent'])
-  const isAPI = Object.values(uaArgs).some((val) => val)
-  if (
-    (options.target === 'API' && isAPI) ||
-    (options.target === 'DEVICE' && !isAPI)
-  ) return mw(ctx, next)
+export enum UATarget {
+  BROWSER = 'BROWSER',
+  DEVICE = 'DEVICE',
+}
+
+const middleware = (options: { target: UATarget }, mw: Middleware): Middleware => (ctx, next) => {
+  let { uaTarget } = ctx.state as { uaTarget?: UATarget };
+  if (!uaTarget) {
+    const { version, ...uaArgs } = useragent.is(ctx.headers['user-agent'])
+    const isBrowser = Object.values(uaArgs).some((val) => val)
+    uaTarget = isBrowser ? UATarget.BROWSER : UATarget.DEVICE
+    ctx.state.uaTarget = uaTarget
+  }
+  if (options.target === uaTarget) return mw(ctx, next)
   return next()
 }
 
