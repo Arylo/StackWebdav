@@ -1,7 +1,8 @@
 import path from 'path'
 import { defineConfig } from "vite";
-import vue from 'unplugin-vue/vite'
-import tailwindcss from '@tailwindcss/vite'
+import VuePlugin from 'unplugin-vue/vite'
+import UnoCSSPlugin from 'unocss/vite'
+import { presetAttributify, presetIcons, presetWind3, transformerDirectives, transformerVariantGroup } from 'unocss'
 
 export default defineConfig({
   root: path.resolve(__dirname, 'app'),
@@ -20,7 +21,32 @@ export default defineConfig({
     cssCodeSplit: true,
   },
   plugins: [
-    vue(),
-    tailwindcss(),
+    VuePlugin({
+      isProduction: true,
+    }),
+    UnoCSSPlugin({
+      mode: 'vue-scoped',
+      presets: [
+        presetAttributify(),
+        presetWind3(),
+        presetIcons({
+          cdn: 'https://esm.sh/'
+        }),
+      ],
+      transformers: [transformerDirectives(), transformerVariantGroup()],
+      shortcuts: {
+        'flex-row-nowrap': 'flex flex-row flex-nowrap',
+        'flex-col-nowrap': 'flex flex-col flex-nowrap',
+        'flex-row-wrap': 'flex flex-row flex-wrap',
+        'flex-col-wrap': 'flex flex-col flex-wrap',
+      },
+    }),
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['mixed-decls'],
+      }
+    },
+  },
 })

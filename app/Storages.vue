@@ -1,75 +1,135 @@
 <template>
-  <div>
-    Storages <SWTag class="bg-blue-100 ml-[5px]">{{ list.length }}</SWTag>
-  </div>
-  <SWCard class="w-full">
-    <Loading :isLoading="isViewAllFetching || isActionFetching">
-      <div
-        v-for="item of list"
-        v-if="!isViewAllFetching"
-        :key="item.id"
-        class="storage-item flex justify-between items-center flex-nowrap has-[.form]:flex-wrap w-full hover:bg-gray-100 has-[.form]:bg-gray-100 rounded-sm pl-2 pr-2 pt-3 pb-3"
+  <ACard
+    :title="`Storages`"
+  >
+    <ASpin :spinning="isLoading">
+      <AEmpty v-if="list.length === 0">
+        <template #description>
+          <AButton type="primary" @click="() => addStorage()">Create Now</AButton>
+        </template>
+      </AEmpty>
+      <AList
+        v-else
+        :data-source="list"
+        item-layout="horizontal"
       >
-        <div>{{ item.path }} <SWTag class="bg-blue-100">{{ getStorageType(item) }}</SWTag></div>
-        <ButtonGroup v-if="currentEditId !== item.id" class="justify-end">
-          <ActionButton @click="currentEditId = item.id">Edit</ActionButton>
-          <DangerButton @click="() => deleteStorage()">Delete</DangerButton>
-        </ButtonGroup>
-        <div v-else class="basis-full form">
-          <div>
-            Mount Path:
-            <input v-model="item.path" />
-          </div>
-          <ButtonGroup class="justify-end">
-            <ActionButton @click="() => saveStorage()">Save</ActionButton>
-            <GeneralButton @click="() => cancel()">Cancel</GeneralButton>
-          </ButtonGroup>
-        </div>
-      </div>
-    </Loading>
-  </SWCard>
+        <template #renderItem="{ item }">
+          <AListItem>
+            <AForm :disabled="!isEditing(item)" :model="item">
+              <AFormItem label="Mount Path">
+                <AInput v-model:value="item.path" placeholder="/" />
+              </AFormItem>
+              <AFormItem label="Storage Device">
+                <ARadioGroup v-model:value="item.device.type">
+                  <ARadioButton value="local">Local Storage</ARadioButton>
+                </ARadioGroup>
+              </AFormItem>
+              <template v-if="isEditing(item)">
+                <AFormItem label="Target Path" v-if="item.device.type === 'local'">
+                  <AInput v-model:value="item.device.path" placeholder="/" />
+                </AFormItem>
+              </template>
+            </AForm>
+            <template #actions>
+              <template v-if="isEditing(item)">
+                <AButton type="primary" @click="() => saveStorage(item)">Save</AButton>
+                <AButton @click="() => cancelEdit()">Cancel</AButton>
+              </template>
+              <template v-else>
+                <AButton type="primary" @click="() => startEditStorage(item)">Edit</AButton>
+                <AButton @click="() => deleteStorage(item)" danger>Delete</AButton>
+              </template>
+            </template>
+          </AListItem>
+        </template>
+        <template #footer v-if="!hasNewRecord">
+          <AButton type="primary" @click="() => addStorage()">Create One</AButton>
+        </template>
+      </AList>
+    </ASpin>
+  </ACard>
 </template>
 <script setup lang="ts">
 import { computed, MaybeRefOrGetter, ref, unref } from 'vue'
-import SWCard from './components/SWCard.vue'
-import Loading from './components/Loading.vue'
-import ButtonGroup from './components/ButtonGroup.vue'
-import GeneralButton from './components/GeneralButton.vue'
-import ActionButton from './components/ActionButton.vue'
-import DangerButton from './components/DangerButton.vue'
-import { useFetch } from '@vueuse/core'
-import { match } from 'ts-pattern'
-import SWTag from './components/SWTag.vue'
+import { useArrayFind, useFetch, whenever } from '@vueuse/core'
+import { logicOr } from '@vueuse/math'
+import {
+  Card as ACard,
+  Empty as AEmpty,
+  Input as AInput,
+  Button as AButton,
+  Spin as ASpin,
+  List as AList,
+  ListItem as AListItem,
+  Form as AForm,
+  FormItem as AFormItem,
+  RadioGroup as ARadioGroup,
+  RadioButton as ARadioButton,
+} from 'ant-design-vue'
 
-const apiRef = (val?: MaybeRefOrGetter) => computed(() => `/-/storages${val ? `/${unref(val)}` : ''}`)
+const newStorageId = Symbol()
+const currentEditId = ref<string|typeof newStorageId|null>(null)
+const apiRef = (val?: MaybeRefOrGetter) => computed(() => `/-/storages${typeof unref(val) === 'string' ? `/${unref(val)}` : ''}`)
 
-const getStorageType = (item) => {
-  return match(item.device)
-    .with({ type: 'local' }, () => 'Local Storage')
-    .otherwise(() => 'Unknown Storage')
+const hasNewRecord = computed(() => {
+  return currentEditId.value === newStorageId
+})
+const isEditing = (item: { id: string | symbol }) => {
+  const [a, b] = [item.id, currentEditId.value]
+  return (typeof a === typeof b) && a === b
+}
+const startEditStorage = (item) => {
+  if (typeof item.id === 'string') {
+    list.value = list.value.filter((item) => item.id !== newStorageId)
+  }
+  currentEditId.value = item.id
+}
+const addStorage = () => {
+  const newStorage = {
+    id: newStorageId,
+    device: { type: 'local' },
+  }
+  list.value.push(newStorage)
+  startEditStorage(newStorage)
 }
 
-const currentEditId = ref(null)
 const viewAllUrl = apiRef()
-const { data, isFetching: isViewAllFetching, execute: queryViewAll } = useFetch(viewAllUrl)
+const { data, isFetching: isViewAllFetching, isFinished: isViewAllFinished, execute: queryViewAll } = useFetch(viewAllUrl)
   .get()
   .json()
-const list = computed(() => unref(data).data)
-const cancel = () => {
+
+const list = ref<any[]>([])
+whenever(isViewAllFinished, () => {
+  list.value = unref(data)?.data ?? []
   currentEditId.value = null
-  return queryViewAll()
-}
-const deleteStorageUrl = apiRef(currentEditId)
+})
+const cancelEdit = () => queryViewAll()
+const toDeleteId = ref(null)
+const deleteStorageUrl = apiRef(toDeleteId)
 const { isFetching: isDeleteFetching, execute: queryDelete } = useFetch(deleteStorageUrl, { immediate: false })
   .delete()
-const deleteStorage = async () => {
+const deleteStorage = async (item) => {
+  toDeleteId.value = item.id
   await queryDelete()
-  return cancel()
+  return cancelEdit()
 }
 
-const saveStorage = async () => {
-  return cancel()
+const upsertUrl = apiRef(currentEditId)
+const upsertPayload = useArrayFind(list, (item) => item.id === currentEditId.value)
+const { isFetching: isUpdateFetching, execute: queryUpdate } = useFetch(upsertUrl, { immediate: false })
+  .put(upsertPayload)
+  .json()
+const { isFetching: isCreateFetching, execute: queryCreate } = useFetch(upsertUrl, { immediate: false })
+  .post(upsertPayload)
+  .json()
+const saveStorage = async (item) => {
+  if (item.id === newStorageId) {
+    await queryCreate()
+  } else if (typeof item.id === 'string') {
+    await queryUpdate()
+  }
+  return cancelEdit()
 }
 
-const isActionFetching = computed(() => isDeleteFetching.value)
+const isLoading = logicOr(isViewAllFetching, isUpdateFetching, isCreateFetching, isDeleteFetching)
 </script>

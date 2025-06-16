@@ -26,7 +26,7 @@ export class LocalStorage extends BaseStore {
   }
   public static from (config: any) {
     if (config.device.type !== 'local') return undefined
-    const inst = new LocalStorage('/', { path: undefined } as any)
+    const inst = new LocalStorage(config.path, { path: undefined } as any)
     inst.id = config.id
     inst.device = config.device
     return inst

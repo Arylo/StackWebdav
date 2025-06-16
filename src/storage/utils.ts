@@ -69,8 +69,18 @@ const storages = new class {
     this.update({ storages })
     this.storeToHardDist()
   }
+  public updateById (id: string, obj: any) {
+    const storages = this.getAll()
+    const currentStorageIndex = lodash.findIndex(storages, (storage) => storage.getStoreInfo().id === id)
+    if (currentStorageIndex === -1) return
+    storages[currentStorageIndex] = lodash.merge(storages[currentStorageIndex], obj, {
+      id,
+    })
+    this.update({ storages: storages })
+    this.storeToHardDist()
+  }
   public removeById (id: string) {
-    const storages = this.getStore()?.storages || []
+    const storages = this.getAll()
     this.update({ storages: lodash.remove(storages, (storage) => storage.getStoreInfo().id === id) })
     this.storeToHardDist()
   }
@@ -78,6 +88,10 @@ const storages = new class {
 
 export function addStorage(storage: BaseStore) {
   return storages.add(storage);
+}
+
+export function updateStorageById(id: string, body: any) {
+  return storages.updateById(id, body)
 }
 
 export function removeStorageById(id: string) {
