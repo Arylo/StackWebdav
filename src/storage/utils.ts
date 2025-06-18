@@ -2,10 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import lodash from 'lodash';
 import { asyncLocalStorage } from './index';
-import { BaseStore } from './BaseStorage';
 import { AsyncLocalStorageStore } from './type';
 import * as settings from '../settings'
-import { LocalStorage } from './LocalStorage';
+import Storage from './Storage';
 
 export type Fn = () => any
 
@@ -52,9 +51,9 @@ const storages = new class {
     const { storages = [] } = JSON.parse(content)
     const storageInstants = (storages as any[])
       .map((storageConfig) => {
-        return LocalStorage.from(storageConfig)
+        return Storage.createFromJSON(storageConfig)
       })
-      .filter(Boolean) as BaseStore[]
+      .filter(Boolean)
     this.update({
       storages: storageInstants,
     })
@@ -63,7 +62,7 @@ const storages = new class {
     const store = this.getStore();
     return store?.storages ?? [];
   }
-  public add(storage: BaseStore) {
+  public add(storage: Storage) {
     const storages = this.getAll()
     storages.push(storage)
     this.update({ storages })
@@ -71,7 +70,7 @@ const storages = new class {
   }
   public updateById (id: string, obj: any) {
     const storages = this.getAll()
-    const currentStorageIndex = lodash.findIndex(storages, (storage) => storage.getStoreInfo().id === id)
+    const currentStorageIndex = lodash.findIndex(storages, (storage) => storage.toJSON().id === id)
     if (currentStorageIndex === -1) return
     storages[currentStorageIndex] = lodash.merge(storages[currentStorageIndex], obj, {
       id,
@@ -81,12 +80,12 @@ const storages = new class {
   }
   public removeById (id: string) {
     const storages = this.getAll()
-    this.update({ storages: lodash.remove(storages, (storage) => storage.getStoreInfo().id === id) })
+    this.update({ storages: lodash.remove(storages, (storage) => storage.toJSON().id === id) })
     this.storeToHardDist()
   }
 };
 
-export function addStorage(storage: BaseStore) {
+export function addStorage(storage: Storage) {
   return storages.add(storage);
 }
 

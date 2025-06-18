@@ -17,20 +17,20 @@ describeApp("e2e", (address) => {
     username: 'test',
     password: 'test',
   })
-  test('List Root', async () => {
+  test.concurrent('List Root', async () => {
     const list = await client.getDirectoryContents('/withFiles')
-    expect(list).toHaveLength(3)
+    expect(list).toHaveLength(4)
   })
-  test('Fetch File', async () => {
+  test.concurrent('Fetch File', async () => {
     const str = await client.getFileContents("/length-8.txt", { format: "text" })
     expect(str).toBe('12345678')
   })
-  test('Create File', async () => {
+  test.concurrent('Create File', async () => {
     await client.putFileContents('/newFile.txt', 'Hello World')
     const str = await client.getFileContents("/newFile.txt", { format: "text" })
     expect(str).toBe('Hello World')
   })
-  test('Delete File', async () => {
+  test.concurrent('Delete File', async () => {
     let list: any[]
     list = await client.getDirectoryContents('/withFile') as any[]
     expect(list).toHaveLength(1)
@@ -38,14 +38,14 @@ describeApp("e2e", (address) => {
     list = await client.getDirectoryContents('/withFile') as any[]
     expect(list).toHaveLength(0)
   })
-  test('Create Folder', async () => {
+  test.concurrent('Create Folder', async () => {
     expect(await client.exists('/newFolder')).toBeFalsy()
     await client.createDirectory('/newFolder')
     expect(await client.exists('/newFolder')).toBeTruthy()
   })
-  test('Delete Folder', async () => {
+  test.concurrent('Delete Folder', async () => {
     expect(await client.exists('/folder')).toBeTruthy()
     await client.deleteFile('/folder')
     expect(await client.exists('/folder')).toBeFalsy()
   })
-}, { setup: initFiles })
+}, { setup: initFiles, mountPaths: ['/', '/withFiles/mount'] })

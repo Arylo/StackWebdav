@@ -1,6 +1,7 @@
 import { Readable } from "stream"
-import { StatResult, PropfindResult } from "./BaseStorage"
+import { StatResult, PropfindResult } from "./devices/BaseDevice"
 import getPassedStorages from "./getPassedStorages"
+import genResourcePath from '../utils/ResourcePath'
 
 export enum STATUS_MESSAGE {
   OK = 'Okay',
@@ -32,7 +33,7 @@ export default new class StorageManager {
       return [STATUS_MESSAGE.NOT_STORAGE]
     }
     for (const storage of storages) {
-      const content = await storage.GET(resourcePath, options)
+      const content = await storage.GET(genResourcePath(resourcePath), options)
       if (typeof content !== 'undefined') {
         return [STATUS_MESSAGE.OK, content]
       }
@@ -45,12 +46,12 @@ export default new class StorageManager {
       return [STATUS_MESSAGE.NOT_STORAGE]
     }
     for (const storage of storages) {
-      const stat = await storage.HEAD(resourcePath)
+      const stat = await storage.HEAD(genResourcePath(resourcePath))
       if (stat) {
         return [STATUS_MESSAGE.EXISTS]
       }
     }
-    await storages[0].MKCOL(resourcePath)
+    await storages[0].MKCOL(genResourcePath(resourcePath))
     return [STATUS_MESSAGE.OK]
   }
   public async HEAD (resourcePath: string): Promise<HEADResult> {
@@ -59,7 +60,7 @@ export default new class StorageManager {
       return [STATUS_MESSAGE.NOT_STORAGE]
     }
     for (const storage of storages) {
-      const stat = await storage.HEAD(resourcePath)
+      const stat = await storage.HEAD(genResourcePath(resourcePath))
       if (stat) return [STATUS_MESSAGE.OK, stat]
     }
     return [STATUS_MESSAGE.NOT_FOUND]
@@ -73,9 +74,9 @@ export default new class StorageManager {
       return [STATUS_MESSAGE.NOT_STORAGE]
     }
     for (const storage of storages) {
-      const stat = await storage.HEAD(resourcePath)
+      const stat = await storage.HEAD(genResourcePath(resourcePath))
       if (stat) {
-        await storage.DELETE(resourcePath)
+        await storage.DELETE(genResourcePath(resourcePath))
         return [STATUS_MESSAGE.OK]
       }
     }
@@ -86,7 +87,7 @@ export default new class StorageManager {
     if (storages.length === 0) {
       return [STATUS_MESSAGE.NOT_STORAGE]
     }
-    const list = (await Promise.all(storages.map(storage => storage.PROPFIND(resourcePath, { depth: options.depth }))))
+    const list = (await Promise.all(storages.map(storage => storage.PROPFIND(genResourcePath(resourcePath), { depth: options.depth }))))
       .flat()
     if (list.length === 0) {
       return [STATUS_MESSAGE.NOT_FOUND]
@@ -99,13 +100,13 @@ export default new class StorageManager {
       return [STATUS_MESSAGE.NOT_STORAGE]
     }
     const targetStorage = storages[0]
-    const stat = await targetStorage.HEAD(resourcePath)
+    const stat = await targetStorage.HEAD(genResourcePath(resourcePath))
     if (stat) {
-      await targetStorage.PUT(resourcePath, data, options)
+      await targetStorage.PUT(genResourcePath(resourcePath), data, options)
       return [STATUS_MESSAGE.OK]
     } else {
       // Create File
-      await targetStorage.PUT(resourcePath, data, options)
+      await targetStorage.PUT(genResourcePath(resourcePath), data, options)
       return [STATUS_MESSAGE.CREATED]
     }
   }

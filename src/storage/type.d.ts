@@ -1,5 +1,5 @@
-import { BaseStore } from "./BaseStorage";
+import Storage from "./Storage";
 
 export interface AsyncLocalStorageStore {
-  storages: BaseStore[],
+  storages: Storage[],
 }

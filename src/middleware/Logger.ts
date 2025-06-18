@@ -3,6 +3,7 @@ import { findUpSync } from 'find-up'
 
 export default () => {
   const middleware: Middleware = async (ctx, next) => {
+    if (process.env.NODE_ENV === 'test') return next()
     console.info(ctx.method, ctx.href, '......')
     const startAt = Date.now()
     await next()

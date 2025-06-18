@@ -1,12 +1,12 @@
 import type { Middleware } from "koa";
 import Router from "@koa/router";
 import { addStorage, getStorages, removeStorageById, updateStorageById } from "../../storage/utils";
-import { LocalStorage } from "../../storage/LocalStorage";
+import Storage from "../../storage/Storage";
 
 const checkExistId = (): Middleware => async (ctx, next) => {
   const { id } = ctx.params
   const storages = getStorages()
-  if (!id || !storages.some((storage) => storage.getStoreInfo().id === id)) {
+  if (!id || !storages.some((storage) => storage.toJSON().id === id)) {
     ctx.status = 404
     return
   }
@@ -28,7 +28,7 @@ router.post('/', async (ctx) => {
   const content = body
   const { path: mountPath, device: { type, ...deviceInfo } } = content
   if (type === 'local') {
-    addStorage(new LocalStorage(mountPath, { ...deviceInfo }))
+    addStorage(new Storage(mountPath, { type, ...deviceInfo }))
   }
   ctx.status = 200
 })
@@ -36,7 +36,7 @@ router.post('/', async (ctx) => {
 router.get('/:id', checkExistId(), async (ctx) => {
   const { id } = ctx.params
   ctx.body = {
-    data: getStorages().find((storage) => storage.getStoreInfo().id === id)
+    data: getStorages().find((storage) => storage.toJSON().id === id)
   }
   ctx.status = 200
 })

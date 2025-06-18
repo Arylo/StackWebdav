@@ -7,12 +7,12 @@ import { addStorage, getStorages, withStorages } from '../src/storage/utils'
 import { nanoid } from 'nanoid'
 import { rimrafSync } from 'rimraf'
 import app from '../src/app'
-import { LocalStorage } from '../src/storage/LocalStorage'
 import { AddressInfo } from 'net'
+import Storage from '../src/storage/Storage'
 
 export const getTestPath = (index = 0) => {
   const stores = getStorages()
-  return stores[index].getStoreInfo().device.path
+  return stores[index].toJSON().device.path
 }
 
 export const createTestFolder = (folderPath: string, storageIndex = 0) => {
@@ -36,7 +36,7 @@ export const describeApp = (
   withStorages(() => {
     const testPaths = mountPaths.map((mountPath) => {
       const testPath = path.resolve(os.tmpdir(), nanoid())
-      addStorage(new LocalStorage(mountPath, { path: testPath }))
+      addStorage(new Storage(mountPath, { device: { type: 'local', path: testPath } }))
       return testPath
     })
     setup()
