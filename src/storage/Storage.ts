@@ -56,6 +56,18 @@ export default class Storage {
       updatedAt: this.updatedAt,
     }
   }
+  public updateConfig (configObject: Partial<Omit<StorageOptions, 'id' | 'createdAt' | 'updatedAt'>>) {
+    const { path, filter, device } = configObject
+    if (path) this.path = path
+    if (filter) this.filter = filter
+    if (device) {
+      this.device = match(device)
+        .with({ type: LocalDevice.DEVICE_NAME }, () => new LocalDevice(device.path))
+        .otherwise(() => this.device)
+    }
+    this.updatedAt = new Date()
+  }
+
   public match (resourcePath: ResourcePath) {
     const result = isMatchPath(this.path, resourcePath.toRaw())
     return !!result

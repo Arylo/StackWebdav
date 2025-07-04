@@ -7,7 +7,7 @@
     "build:source": "tsc -p tsconfig.build.json && tscp -p tsconfig.build.json",
     "build:page": "vite build",
     "start": "nodemon src/index.ts",
-    "test": "vitest --coverage"
+    "test": "vitest --coverage -r src"
   },
   "keywords": [
     "webdav",
