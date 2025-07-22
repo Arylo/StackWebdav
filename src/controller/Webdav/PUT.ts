@@ -1,22 +1,22 @@
 import { Middleware } from "koa";
-import StorageManager, { STATUS_MESSAGE } from "../../storage/StorageManager";
-import Status from 'http-status';
-import { nonStorage } from "./utils";
+import StorageManager from "../../storage/StorageManager";
+import { fail } from "./utils";
 
 const PUT: Middleware = async (ctx, next) => {
-  const data = await new Promise<Buffer>((resolve, reject) => {
-    let chunks: any[] = [];
-    ctx.req.on('data', chunk => chunks.push(chunk))
-    ctx.req.on('end', () => resolve(Buffer.concat(chunks)))
-    ctx.req.on('error', err => reject(err))
-  });
-  const [status] = await StorageManager.PUT(ctx.url, data);
-  if (status === STATUS_MESSAGE.NOT_STORAGE) return nonStorage(ctx)
-  if (status === STATUS_MESSAGE.CREATED) {
-    ctx.status = Status.CREATED
-    return
+  let data!: Buffer
+  try {
+    data = await new Promise<Buffer>((resolve, reject) => {
+      let chunks: any[] = [];
+      ctx.req.on('data', chunk => chunks.push(chunk))
+      ctx.req.on('end', () => resolve(Buffer.concat(chunks)))
+      ctx.req.on('error', err => reject(err))
+    });
+  } catch (error) {
+    console.error(error)
+    return fail(ctx)
   }
-  ctx.status = Status.OK
+  const result = await StorageManager.PUT(ctx.url, data);
+  ctx.status = result.statusCode
 }
 
 export default PUT

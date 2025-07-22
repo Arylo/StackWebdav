@@ -1,114 +1,100 @@
-import { Readable } from "stream"
-import { StatResult, PropfindResult } from "./devices/BaseDevice"
 import getPassedStorages from "./getPassedStorages"
 import genResourcePath from '../utils/ResourcePath'
+import Result, { RESULT_STATUS } from "./Result"
+import Status from 'http-status'
 
-export enum STATUS_MESSAGE {
-  OK = 'Okay',
-  CREATED = 'Created',
-  EXISTS = 'Exists',
-  NOT_STORAGE = 'Not Storage',
-  NOT_FOUND = 'Not Found',
-}
-
-export type GETResult = [STATUS_MESSAGE.NOT_STORAGE | STATUS_MESSAGE.NOT_FOUND] | [STATUS_MESSAGE.OK, Readable]
 export type GETOptions = {
   start: number,
   end: number,
 }
-export type MKCOLResult = [STATUS_MESSAGE.OK | STATUS_MESSAGE.EXISTS | STATUS_MESSAGE.NOT_STORAGE]
-export type HEADResult = [STATUS_MESSAGE.NOT_FOUND | STATUS_MESSAGE.NOT_STORAGE] | [STATUS_MESSAGE.OK, StatResult]
-export type DELETEResult = [STATUS_MESSAGE.NOT_FOUND | STATUS_MESSAGE.NOT_STORAGE | STATUS_MESSAGE.OK]
-export type PROPFINDResult = [STATUS_MESSAGE.NOT_FOUND | STATUS_MESSAGE.NOT_STORAGE] | [STATUS_MESSAGE.OK, PropfindResult]
 export type PUTOptions = {
   start: number,
   end: number,
 }
-export type PUTResult = [STATUS_MESSAGE.NOT_STORAGE | STATUS_MESSAGE.OK | STATUS_MESSAGE.CREATED]
 
 export default new class StorageManager {
-  public async GET (resourcePath: string, options?: GETOptions): Promise<GETResult> {
+  public async GET (resourcePath: string, options?: GETOptions) {
     const storages = getPassedStorages(resourcePath)
     if (storages.length === 0) {
-      return [STATUS_MESSAGE.NOT_STORAGE]
+      return Result(RESULT_STATUS.NOT_STORAGE)
     }
     for (const storage of storages) {
       const content = await storage.GET(genResourcePath(resourcePath), options)
       if (typeof content !== 'undefined') {
-        return [STATUS_MESSAGE.OK, content]
+        return Result(content)
       }
     }
-    return [STATUS_MESSAGE.NOT_FOUND]
+    return Result(RESULT_STATUS.NOT_FOUND)
   }
-  public async MKCOL (resourcePath: string): Promise<MKCOLResult> {
+  public async MKCOL (resourcePath: string) {
     const storages = getPassedStorages(resourcePath)
     if (storages.length === 0) {
-      return [STATUS_MESSAGE.NOT_STORAGE]
+      return Result(RESULT_STATUS.NOT_STORAGE)
     }
     for (const storage of storages) {
       const stat = await storage.HEAD(genResourcePath(resourcePath))
       if (stat) {
-        return [STATUS_MESSAGE.EXISTS]
+        return Result(RESULT_STATUS.EXISTS)
       }
     }
     await storages[0].MKCOL(genResourcePath(resourcePath))
-    return [STATUS_MESSAGE.OK]
+    return Result(RESULT_STATUS.CREATED)
   }
-  public async HEAD (resourcePath: string): Promise<HEADResult> {
+  public async HEAD (resourcePath: string) {
     const storages = getPassedStorages(resourcePath)
     if (storages.length === 0) {
-      return [STATUS_MESSAGE.NOT_STORAGE]
+      return Result(RESULT_STATUS.NOT_STORAGE)
     }
     for (const storage of storages) {
       const stat = await storage.HEAD(genResourcePath(resourcePath))
-      if (stat) return [STATUS_MESSAGE.OK, stat]
+      if (stat) return Result(stat)
     }
-    return [STATUS_MESSAGE.NOT_FOUND]
+    return Result(RESULT_STATUS.NOT_FOUND)
   }
-  public async DELETE (resourcePath: string): Promise<DELETEResult> {
+  public async DELETE (resourcePath: string) {
     if (resourcePath === '/') {
-      return [STATUS_MESSAGE.NOT_FOUND]
+      return Result(RESULT_STATUS.NOT_FOUND)
     }
     const storages = getPassedStorages(resourcePath)
     if (storages.length === 0) {
-      return [STATUS_MESSAGE.NOT_STORAGE]
+      return Result(RESULT_STATUS.NOT_STORAGE)
     }
     for (const storage of storages) {
       const stat = await storage.HEAD(genResourcePath(resourcePath))
       if (stat) {
         await storage.DELETE(genResourcePath(resourcePath))
-        return [STATUS_MESSAGE.OK]
+        return Result()
       }
     }
-    return [STATUS_MESSAGE.NOT_FOUND]
+    return Result(RESULT_STATUS.NOT_FOUND)
   }
-  public async PROPFIND (resourcePath: string, options: { depth: number }): Promise<PROPFINDResult> {
+  public async PROPFIND (resourcePath: string, options: { depth: number }) {
     const storages = getPassedStorages(resourcePath)
     if (storages.length === 0) {
-      return [STATUS_MESSAGE.NOT_STORAGE]
+      return Result(RESULT_STATUS.NOT_STORAGE)
     }
     const list = (await Promise.all(storages.map(storage => storage.PROPFIND(genResourcePath(resourcePath), { depth: options.depth }))))
       .flat()
     if (list.length === 0) {
-      return [STATUS_MESSAGE.NOT_FOUND]
+      return Result(RESULT_STATUS.NOT_FOUND)
     }
-    return [STATUS_MESSAGE.OK, list]
+    return Result(list)
+      .setCustomStatusCode(RESULT_STATUS.OK, Status.MULTI_STATUS)
   }
-  public async PUT (resourcePath: string, data: Buffer | string, options?: PUTOptions): Promise<PUTResult> {
+  public async PUT (resourcePath: string, data: Buffer | string, options?: PUTOptions) {
     const storages = getPassedStorages(resourcePath)
     if (storages.length === 0) {
-      return [STATUS_MESSAGE.NOT_STORAGE]
+      return Result(RESULT_STATUS.NOT_STORAGE)
     }
     const targetStorage = storages[0]
     const stat = await targetStorage.HEAD(genResourcePath(resourcePath))
     if (stat) {
       await targetStorage.PUT(genResourcePath(resourcePath), data, options)
-      return [STATUS_MESSAGE.OK]
+      return Result()
     } else {
       // Create File
       await targetStorage.PUT(genResourcePath(resourcePath), data, options)
-      return [STATUS_MESSAGE.CREATED]
+      return Result(RESULT_STATUS.CREATED)
     }
   }
-
 }

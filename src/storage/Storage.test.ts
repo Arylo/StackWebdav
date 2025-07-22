@@ -78,14 +78,21 @@ describe('Simple Storage', () => {
     })
     test('PROPFIND root path', async () => {
       const result = await storage.PROPFIND(resourcePath('/'), { depth: 1 })
-      expect(result).toEqual({
-        href: '/webdav',
-        properties: {
-          'd:resourcetype': { 'd:collection': {} },
-          'd:getcontentlength': '0',
-          'd:getlastmodified': expect.any(String),
-        },
-      })
+      expect(result).toEqual([{
+        mime: null,
+        mtime: expect.any(Date),
+        name: 'webdav',
+        path: '/webdav',
+        size: 0,
+        type: 'directory',
+      }, {
+        mime: null,
+        mtime: expect.any(Date),
+        name: '/',
+        path: '/',
+        size: 0,
+        type: 'directory',
+      }])
     })
   })
 })

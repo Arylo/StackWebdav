@@ -119,10 +119,12 @@ export default class Storage {
         [MatchPathResult.UNDER]: noneAsync,
         [MatchPathResult.NOT]: noneAsync,
         [MatchPathResult.IN]: async ({ index, mountPaths }) => {
+          const curP = path.join('/', mountPaths.slice(0, index).join('/'))
+          const nextP = path.join('/', mountPaths.slice(0, index + 1).join('/'))
           switch (options.depth) {
             case 1:
               list.push({
-                path: path.join('/', mountPaths.slice(0, index + 1).join('/')),
+                path: nextP,
                 mtime: this.updatedAt,
                 size: 0,
                 mime: null,
@@ -131,12 +133,12 @@ export default class Storage {
               })
             case 0:
               list.push({
-                path: path.join('/', mountPaths.slice(0, index).join('/')),
+                path: curP,
                 mtime: this.updatedAt,
                 size: 0,
                 mime: null,
                 type: StatType.Directory,
-                name: mountPaths[index],
+                name: curP === '/' ? '/' : mountPaths[index],
               })
           }
           return

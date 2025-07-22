@@ -2,18 +2,23 @@ import { test, expect, describe } from 'vitest'
 import supertest from 'supertest'
 import Status from 'http-status';
 import { testWebdavCommon } from '../../../test/common'
-import { createTestFile, createTestFolder, describeApp } from "../../../test/storage"
+import LocalTestStorage from '../../../test/LocalTestStorage';
+import describeApp from '../../../test/describeApp';
 
-function initFiles () {
-  createTestFolder('folder')
-  createTestFile('index.js')
-  createTestFile('withFile/index.js')
-  createTestFile('withFiles/index.js')
-  createTestFile('withFiles/index.html', '<html></html>')
-  createTestFile('withFiles/length-4.txt', '1234')
-}
 
 describe('Basic Webdav', () => {
+  const localTestStorage = new LocalTestStorage('/', {
+    files: ({ folder, file }) => {
+      folder('folder')
+      file('index.js')
+      file('withFile/index.js')
+      file('withFiles/index.js')
+      file('withFiles/index.html', '<html></html>')
+      file('withFiles/length-4.txt', '1234')
+    },
+  })
+    .afterAll()
+
   describeApp('Method MKCOL', (serverAddress) => {
     describe('Create Folder in Root path', () => {
       const st = supertest(serverAddress).mkcol('/newFolder')
@@ -37,5 +42,5 @@ describe('Basic Webdav', () => {
         expect(status).toBe(Status.METHOD_NOT_ALLOWED)
       })
     })
-  }, { setup: () => initFiles() })
+  }, { storages: [localTestStorage] })
 })

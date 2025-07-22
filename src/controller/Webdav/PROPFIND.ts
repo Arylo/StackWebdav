@@ -1,8 +1,6 @@
 import { Middleware } from "koa";
-import Status from 'http-status';
 import { renderPROPFIND } from '../../template';
-import { nonFound, nonStorage } from './utils';
-import StorageManager, { STATUS_MESSAGE } from '../../storage/StorageManager';
+import StorageManager from '../../storage/StorageManager';
 
 const PROPFIND: Middleware = async (ctx) => {
   const depthParam = ctx.get('DEPTH')
@@ -10,9 +8,10 @@ const PROPFIND: Middleware = async (ctx) => {
   if (![0, 1].includes(depth)) {
     depth = 0
   }
-  const [status, list] = await StorageManager.PROPFIND(ctx.url, { depth })
-  if (status === STATUS_MESSAGE.OK)  {
-    const entries = list.map((entry) => {
+  const result = await StorageManager.PROPFIND(ctx.url, { depth })
+  ctx.status = result.statusCode
+  if (result.data)  {
+    const entries = result.data.map((entry) => {
       const isDirectory = entry.type === 'directory'
       return {
         href: isDirectory ? (!entry.path.endsWith('/') ? `${entry.path}/` : entry.path) : entry.path,
@@ -22,17 +21,9 @@ const PROPFIND: Middleware = async (ctx) => {
         contentType: entry.mime,
         displayName: entry.name,
       }
-    })
+    }) ?? []
     ctx.body = renderPROPFIND(entries)
-    ctx.status = Status.MULTI_STATUS
     ctx.set('Content-Type', 'application/xml')
-    return
-  }
-  if (status === STATUS_MESSAGE.NOT_STORAGE) {
-    return nonStorage(ctx)
-  }
-  if (status === STATUS_MESSAGE.NOT_FOUND) {
-    return nonFound(ctx)
   }
 }
 

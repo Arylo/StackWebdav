@@ -1,10 +1,12 @@
+import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import { afterAll, describe, expect, test } from "vitest";
-import LocalDevice from "./LocalDevice";
-import { nanoid } from 'nanoid';
-import { rimrafSync } from 'rimraf';
-import resourcePath from '../../utils/ResourcePath';
+import { beforeAll, afterAll, describe, expect, test } from "vitest"
+import LocalDevice from "./LocalDevice"
+import { nanoid } from 'nanoid'
+import { rimrafSync } from 'rimraf'
+import resourcePath from '../../utils/ResourcePath'
+import '../../../test/expectFs'
 
 describe('Storage', () => {
   describe(LocalDevice.name, () => {
@@ -16,16 +18,22 @@ describe('Storage', () => {
     })
     describe('Actions', () => {
       const testRootPath = path.resolve(os.tmpdir(), nanoid())
+      let storage: LocalDevice
+      beforeAll(() => {
+        fs.mkdirSync(testRootPath, { recursive: true })
+        storage = new LocalDevice(testRootPath)
+      })
       afterAll(() => {
         rimrafSync(testRootPath)
       })
 
-      const storage = new LocalDevice(testRootPath)
       test('Create file and check it', async () => {
         const prefix = resourcePath(`/${nanoid()}`)
         expect(await storage.HEAD(prefix.join(`/index.html`))).not.toBeDefined()
         await storage.PUT(prefix.join(`/index.html`), '')
         expect(await storage.HEAD(prefix.join(`/index.html`))).toBeDefined()
+        expect(path.resolve(testRootPath, `.${prefix.toRaw()}`, 'index.html')).toBeFileExist()
+        expect(path.resolve(testRootPath, `.${prefix.toRaw()}`, 'index.html')).toBeFileContent('')
       })
       test('Create file under subfolder and check it', async () => {
         const prefix = resourcePath(`/${nanoid()}`)
@@ -40,6 +48,8 @@ describe('Storage', () => {
           size: 0,
           type: 'file',
         })
+        expect(path.resolve(testRootPath, `.${prefix.toRaw()}`, 'subfolder/index.html')).toBeFileExist()
+        expect(path.resolve(testRootPath, `.${prefix.toRaw()}`, 'subfolder/index.html')).toBeFileContent('')
       })
       test('Create folder and check it', async () => {
         const prefix = resourcePath(`/${nanoid()}`)
@@ -52,6 +62,7 @@ describe('Storage', () => {
           size: 0,
           type: 'directory',
         })
+        expect(path.resolve(testRootPath, `.${prefix.toRaw()}`, 'folder')).toBeFolderExist()
       })
       test('to be delete folder and check it', async () => {
         const prefix = resourcePath(`/${nanoid()}`)
@@ -60,6 +71,7 @@ describe('Storage', () => {
         expect(await storage.HEAD(prefix.join(`/toBeDeleteFolder`))).toBeDefined()
         await storage.DELETE(prefix.join(`/toBeDeleteFolder`))
         expect(await storage.HEAD(prefix.join(`/toBeDeleteFolder`))).not.toBeDefined()
+        expect(path.resolve(testRootPath, `.${prefix.toRaw()}`, 'toBeDeleteFolder')).not.toBeFolderExist()
       })
       test('to be delete file and check it', async () => {
         const prefix = resourcePath(`/${nanoid()}`)
@@ -71,6 +83,7 @@ describe('Storage', () => {
         await storage.DELETE(prefix.join(`/toBeDeleteFile/sample.txt`))
         expect(await storage.HEAD(prefix.join(`/toBeDeleteFile/sample.txt`))).not.toBeDefined()
         expect(await storage.HEAD(prefix.join(`/toBeDeleteFile`))).toBeDefined()
+        expect(path.resolve(testRootPath, `.${prefix.toRaw()}`, 'toBeDeleteFile/sample.txt')).not.toBeFileExist()
       })
       test('find files and folders', async () => {
         const prefix = resourcePath(`/${nanoid()}`)
