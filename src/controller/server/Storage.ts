@@ -3,18 +3,16 @@ import Router from "@koa/router";
 import { addStorage, getStorages, removeStorageById, updateStorageById } from "../../storage/utils";
 import Storage from "../../storage/Storage";
 
-const checkExistId = (): Middleware => async (ctx, next) => {
-  const { id } = ctx.params
-  const storages = getStorages()
-  if (!id || !storages.some((storage) => storage.toJSON().id === id)) {
-    ctx.status = 404
-    return
-  }
-  return next()
-}
-
 const router = new Router({
   prefix: '/storages'
+})
+
+router.param('storageId', async (id, ctx, next) => {
+  const storages = getStorages()
+  if (!id || !storages.some((storage) => storage.toJSON().id === id)) {
+    return ctx.status = 404
+  }
+  return next()
 })
 
 router.get('/', (ctx) => {
@@ -33,22 +31,22 @@ router.post('/', async (ctx) => {
   ctx.status = 200
 })
 
-router.get('/:id', checkExistId(), async (ctx) => {
-  const { id } = ctx.params
+router.get('/:storageId', async (ctx) => {
+  const { storageId } = ctx.params
   ctx.body = {
-    data: getStorages().find((storage) => storage.toJSON().id === id)
+    data: getStorages().find((storage) => storage.toJSON().id === storageId)
   }
   ctx.status = 200
 })
 
-router.put('/:id', checkExistId(), async (ctx) => {
-  updateStorageById(ctx.params.id, ctx.request.body)
+router.put('/:storageId', async (ctx) => {
+  updateStorageById(ctx.params.storageId, ctx.request.body)
   ctx.status = 200
 })
 
-router.delete('/:id', checkExistId(), async (ctx) => {
-  const { id } = ctx.params
-  removeStorageById(id)
+router.delete('/:storageId', async (ctx) => {
+  const { storageId } = ctx.params
+  removeStorageById(storageId)
   ctx.status = 200
 })
 

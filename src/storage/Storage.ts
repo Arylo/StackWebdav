@@ -146,9 +146,9 @@ export default class Storage {
       })
     } else {
       const result = await this.device.PROPFIND(realResourcePath, options)
-      list.push(...result
-        .map((item) => ({ ...item, path: path.join(this.path, item.path) }))
-      )
+      list.push(...(
+        result.map((item) => ({ ...item, path: path.join(this.path, item.path) }))
+      ))
     }
     return list
   }

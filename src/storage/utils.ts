@@ -1,8 +1,8 @@
 import path from 'path'
 import fs from 'fs'
 import lodash from 'lodash';
-import { asyncLocalStorage } from './index';
-import { AsyncLocalStorageStore } from './type';
+import { asyncLocalStorage } from './asyncLocalStorage';
+import { AsyncLocalStorageStore } from './type.d';
 import * as settings from '../settings'
 import Storage from './Storage';
 
@@ -85,22 +85,12 @@ const storages = new class {
   }
 };
 
-export function addStorage(storage: Storage) {
-  return storages.add(storage);
-}
+export const addStorage = storages.add.bind(storages)
 
-export function updateStorageById(id: string, body: any) {
-  return storages.updateById(id, body)
-}
+export const updateStorageById = storages.updateById.bind(storages)
 
-export function removeStorageById(id: string) {
-  return storages.removeById(id)
-}
+export const removeStorageById = storages.removeById.bind(storages)
 
-export function getStorages() {
-  return storages.getAll();
-}
+export const getStorages = storages.getAll.bind(storages)
 
-export function loadConfig () {
-  return storages.loadConfig()
-}
+export const loadConfig = storages.loadConfig.bind(storages)

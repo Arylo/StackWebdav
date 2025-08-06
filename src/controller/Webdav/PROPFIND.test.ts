@@ -3,18 +3,9 @@ import supertest from 'supertest'
 import Status from 'http-status';
 import { parseStringPromise } from 'xml2js'
 import { testWebdavCommon, testWebdavCommonResult } from '../../../test/common'
-import { createTestFile, createTestFolder, describeApp } from "../../../test/storage"
-import { getZone } from '../../../test/xml';
-
-function initFiles () {
-  createTestFolder('folder')
-  createTestFile('index.js')
-  createTestFile('length-8.txt', '12345678')
-  createTestFile('withFile/index.js')
-  createTestFile('withFiles/index.js')
-  createTestFile('withFiles/index.html', '<html></html>')
-  createTestFile('withFiles/length-4.txt', '1234')
-}
+import { getZone } from '../../../test/xml'
+import LocalTestStorage from '../../../test/LocalTestStorage'
+import describeApp from '../../../test/describeApp'
 
 const matchFileObject = (zone: string, metadata: { href: string, size: number, mime: string, displayName: string }) => ({
   [`${zone}:href`]: [metadata.href],
@@ -51,6 +42,18 @@ const matchFolderObject = (zone: string, metadata: { href: string, size: number,
 })
 
 describe('Basic Webdav', () => {
+  const localTestStorage = new LocalTestStorage('/', {
+    files: ({ folder, file }) => {
+      folder('folder')
+      file('index.js')
+      file('withFile/index.js')
+      file('withFiles/index.js')
+      file('withFiles/index.html', '<html></html>')
+      file('withFiles/length-4.txt', '1234')
+    },
+  })
+    .afterAll()
+
   describeApp('Method PROPFIND', (serverAddress) => {
     describe.each([
       ['DEPTH default value', undefined],
@@ -194,5 +197,5 @@ describe('Basic Webdav', () => {
         })
       })
     })
-  }, { setup: () => initFiles() })
+  }, { storages: [localTestStorage] })
 })
