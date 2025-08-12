@@ -2,6 +2,8 @@ import getPassedStorages from "./getPassedStorages"
 import genResourcePath from '../utils/ResourcePath'
 import Result, { RESULT_STATUS } from "./Result"
 import Status from 'http-status'
+import PathGroup from "../utils/PathGroup"
+import { getStorages } from "./utils"
 
 export type GETOptions = {
   start: number,
@@ -51,18 +53,18 @@ export default new class StorageManager {
     }
     return Result(RESULT_STATUS.NOT_FOUND)
   }
-  public async DELETE (resourcePath: string) {
-    if (resourcePath === '/') {
+  public async DELETE (resourcePathGroup: PathGroup) {
+    if (resourcePathGroup.length === 0) {
       return Result(RESULT_STATUS.NOT_FOUND)
     }
-    const storages = getPassedStorages(resourcePath)
+    const storages = getPassedStorages(resourcePathGroup)
     if (storages.length === 0) {
       return Result(RESULT_STATUS.NOT_STORAGE)
     }
     for (const storage of storages) {
-      const stat = await storage.HEAD(genResourcePath(resourcePath))
+      const stat = await storage.HEAD(genResourcePath(resourcePathGroup))
       if (stat) {
-        await storage.DELETE(genResourcePath(resourcePath))
+        await storage.DELETE(genResourcePath(resourcePathGroup))
         return Result()
       }
     }

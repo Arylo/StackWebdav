@@ -66,6 +66,7 @@
     "matcher": "^5.0.0",
     "mime": "^4.0.7",
     "nanoid": "^5.1.5",
+    "path-to-regexp": "^8.2.0",
     "pug": "^3.0.3",
     "rimraf": "^6.0.1",
     "ts-pattern": "^5.7.1",
