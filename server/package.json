@@ -1,0 +1,26 @@
+{
+  "name": "stackwebdav-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc -p .",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "lint": "oxlint"
+  },
+  "dependencies": {
+    "@koa/router": "^12.0.2",
+    "koa": "^2.16.3",
+    "@iarna/toml": "^2.2.5",
+    "webdav": "^5.6.0"
+  },
+  "devDependencies": {
+    "@types/koa__router": "^12.0.5",
+    "@types/node": "^20.11.0",
+    "oxlint": "^0.11.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0",
+    "vitest": "^1.2.0"
+  }
+}

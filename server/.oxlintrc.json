@@ -1,0 +1,10 @@
+{
+  "ignores": [
+    "dist/**",
+    "node_modules/**"
+  ],
+  "plugins": ["import"],
+  "rules": {
+    "import/order": "error"
+  }
+}
