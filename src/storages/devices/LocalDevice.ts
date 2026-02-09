@@ -1,19 +1,20 @@
 import {
-  BaseDevice,
+  Device,
   GetOptions,
   PropfindOptions,
   PropfindResult,
   PUTOptions,
   StatResult,
   StatType,
-} from "./BaseDevice"
+} from "./Device"
 import path from 'path'
 import fs from 'fs'
 import { rimraf } from 'rimraf'
 import mime from 'mime'
-import resourcePath, { ResourcePath } from "../../utils/ResourcePath"
+import resourcePath, { ResourcePath } from "../../old/utils/ResourcePath"
+import genPathGroup, { PathGroup } from "../../utils/genPathGroup"
 
-export default class LocalDevice extends BaseDevice {
+export default class LocalDevice extends Device {
   public static readonly DEVICE_NAME = 'local'
   protected readonly deviceName = LocalDevice.DEVICE_NAME
   protected path: string
@@ -27,29 +28,28 @@ export default class LocalDevice extends BaseDevice {
       path: this.path,
     }
   }
-  private getResourcePath (resourcePath: ResourcePath) {
-    const targetPath = resourcePath.toRaw()
-    return path.join(this.path, targetPath)
+  private getRealPath (pathGroup: PathGroup) {
+    return pathGroup.prepend(this.path).toString()
   }
 
-  public async COPY(resourcePath: ResourcePath) {
+  public async COPY(pathGroup: PathGroup) {
     return false
   }
-  public async DELETE(resourcePath: ResourcePath) {
-    const currentPath = this.getResourcePath(resourcePath)
+  public async DELETE(pathGroup: PathGroup) {
+    const currentPath = this.getRealPath(pathGroup)
     await rimraf(currentPath)
     return true
   }
-  public async GET(resourcePath: ResourcePath, options: GetOptions) {
-    const stat = await this.HEAD(resourcePath)
+  public async GET(pathGroup: PathGroup, options: GetOptions) {
+    const stat = await this.HEAD(pathGroup)
     if (!stat) return undefined
     if (stat.type === StatType.Directory) return undefined
-    const currentPath = this.getResourcePath(resourcePath)
+    const currentPath = this.getRealPath(pathGroup)
     const readStreamOptions = options ? { start: options.start, end: options.end } : undefined
     return fs.createReadStream(currentPath, readStreamOptions)
   }
-  public async HEAD(resourcePath: ResourcePath) {
-    const currentPath = this.getResourcePath(resourcePath)
+  public async HEAD(pathGroup: PathGroup) {
+    const currentPath = this.getRealPath(pathGroup)
     const isExist = fs.existsSync(currentPath)
     if (!isExist) return undefined
     const stat = await fs.promises.stat(currentPath)
@@ -61,51 +61,54 @@ export default class LocalDevice extends BaseDevice {
     }
     return result
   }
-  public async MKCOL(resourcePath: ResourcePath) {
-    const currentPath = this.getResourcePath(resourcePath)
+  public async MKCOL(pathGroup: PathGroup) {
+    const currentPath = this.getRealPath(pathGroup)
     await fs.promises.mkdir(currentPath, { recursive: true })
     return true
   }
-  public async MOVE(resourcePath: ResourcePath) {
+  public async MOVE(pathGroup: PathGroup) {
     return false
   }
-  private async PROPFINDInfos(resourcePaths: ResourcePath[], depth: number) {
-    const list = await Promise.all(resourcePaths.map(async (resourcePath) => {
-      const targetPath = this.getResourcePath(resourcePath)
+  private async PROPFINDInfos(pathGroups: PathGroup[], depth: number) {
+    const list = await Promise.all(pathGroups.map(async (pathGroup) => {
+      const targetPath = this.getRealPath(pathGroup)
       const stat = await fs.promises.stat(targetPath)
       const targetPathStat =  {
-        path: resourcePath.toRaw(),
+        path: pathGroup.toString(),
         mtime: stat.mtime,
         size: stat.isFile() ? stat.size : 0,
         mime: mime.getType(targetPath),
         type: stat.isFile() ? StatType.File : StatType.Directory,
-        name: resourcePath.toRaw() === '/' ? '/' : path.basename(targetPath),
+        name: pathGroup.toString() === '/' ? '/' : path.basename(targetPath),
       }
       return targetPathStat
     }))
     if (depth !== 0 && list.length !== 0) {
-      const paths = (await Promise.all(list
+      const realDepth = depth === Infinity ? Number.MAX_SAFE_INTEGER : depth
+      const nextPathGroups = (await Promise.all(list
         .filter((item) => item.type === StatType.Directory)
         .map(async (item) => {
-          const folderResourcePath = resourcePath(item.path)
-          const filenames = await fs.promises.readdir(this.getResourcePath(folderResourcePath))
-          return filenames.map((filename) => folderResourcePath.join(filename))
+          const folderPathGroup = genPathGroup(item.path)
+          const filenames = await fs.promises.readdir(this.getRealPath(folderPathGroup))
+          return filenames.map((filename) => folderPathGroup.append(filename))
         })))
         .flat()
-      const results = await this.PROPFINDInfos(paths, depth - 1)
-      list.push(...results)
+      if (nextPathGroups.length !== 0) {
+        const results = await this.PROPFINDInfos(nextPathGroups, realDepth - 1)
+        list.push(...results)
+      }
     }
     return list
   }
-  public async PROPFIND(resourcePath: ResourcePath, options: PropfindOptions) {
-    const currentPath = this.getResourcePath(resourcePath)
+  public async PROPFIND(pathGroup: PathGroup, options: PropfindOptions) {
+    const currentPath = this.getRealPath(pathGroup)
     const isExist = fs.existsSync(currentPath)
     if (!isExist) return []
-    const list: PropfindResult = await this.PROPFINDInfos([resourcePath], options.depth)
+    const list: PropfindResult = await this.PROPFINDInfos([pathGroup], options.depth)
     return list
   }
-  public async PUT(resourcePath: ResourcePath, content: Buffer | string, options?: PUTOptions) {
-    const currentPath = this.getResourcePath(resourcePath)
+  public async PUT(pathGroup: PathGroup, content: Buffer | string, options?: PUTOptions) {
+    const currentPath = this.getRealPath(pathGroup)
     await fs.promises.mkdir(path.dirname(currentPath), { recursive: true })
     const fd = await fs.promises.open(currentPath, 'w')
     let args: any[] = []
@@ -116,10 +119,10 @@ export default class LocalDevice extends BaseDevice {
     await fd.close()
     return true
   }
-  public async LOCK(resourcePath: ResourcePath) {
+  public async LOCK(pathGroup: PathGroup) {
     return false
   }
-  public async UNLOCK(resourcePath: ResourcePath) {
+  public async UNLOCK(pathGroup: PathGroup) {
     return false
   }
 }

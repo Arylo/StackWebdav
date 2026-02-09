@@ -1,5 +1,5 @@
-import app from './app'
-import * as settings from './settings'
+import app from '../app'
+import * as settings from '../storages/common/settings'
 import { loadConfig, withStorages } from './storage/utils'
 
 withStorages(() => {

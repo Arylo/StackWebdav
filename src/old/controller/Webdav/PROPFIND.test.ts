@@ -2,10 +2,10 @@ import { test, expect, describe } from 'vitest'
 import supertest from 'supertest'
 import Status from 'http-status';
 import { parseStringPromise } from 'xml2js'
-import { testWebdavCommon, testWebdavCommonResult } from '../../../test/common'
-import { getZone } from '../../../test/xml'
-import LocalTestStorage from '../../../test/LocalTestStorage'
-import describeApp from '../../../test/describeApp'
+import { testWebdavCommon, testWebdavCommonResult } from '../../../../test/common'
+import { getZone } from '../../../../test/xml'
+import LocalTestStorage from '../../../../test/LocalTestStorage'
+import describeApp from '../../../../test/describeApp'
 
 const matchFileObject = (zone: string, metadata: { href: string, size: number, mime: string, displayName: string }) => ({
   [`${zone}:href`]: [metadata.href],

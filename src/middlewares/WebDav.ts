@@ -1,13 +1,11 @@
 import type { Middleware } from "koa";
-import { findUpSync } from 'find-up'
-import { METHOD } from "../controller/Webdav/constant";
+import { METHOD } from "../old/controller/Webdav/constant";
+import pkgInfo from '../storages/common/packageInfo'
 
 export default () => {
-  const PROJECT_FILE_PATH = findUpSync('package.json') as string
-  const { name, version } = require(PROJECT_FILE_PATH)
   const middleware: Middleware = async (ctx, next) => {
     await next()
-    ctx.set('Server', `${name}/${version}`)
+    ctx.set('Server', `${pkgInfo.name}/${pkgInfo.version}`)
     ctx.set('DAV', '1,2')
     ctx.set('Allow', Object.values(METHOD).join(','))
 

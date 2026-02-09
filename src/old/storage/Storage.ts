@@ -1,11 +1,11 @@
 import { nanoid } from "nanoid"
-import LocalDevice from "./devices/LocalDevice";
-import { BaseDevice, PropfindResult, StatType } from "./devices/BaseDevice";
+import LocalDevice from "../../storages/devices/LocalDevice";
+import { Device, PropfindResult, StatType } from "../../storages/devices/Device";
 import { match } from "ts-pattern";
 import { ResourcePath } from "../utils/ResourcePath";
-import { GetOptions, PropfindOptions, PUTOptions } from "./devices/BaseDevice";
+import { GetOptions, PropfindOptions, PUTOptions } from "../../storages/devices/Device";
 import baseMatchPath, { MatchPathResult } from "../utils/baseMatchPath";
-import noneAsync from "../utils/noneAsync";
+import noneAsync from "../../utils/noneAsync";
 import isMatchPath from "../utils/isMatchPath";
 import path from "path";
 
@@ -27,7 +27,7 @@ export default class Storage {
   private createdAt!: Date
   private updatedAt!: Date
   private filter?: string;
-  private device: BaseDevice;
+  private device: Device;
   constructor (mountPath: string, options: Omit<StorageOptions, 'id' | 'path' | 'createdAt' | 'updatedAt'>) {
     this.id = nanoid()
     this.path = mountPath

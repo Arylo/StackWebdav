@@ -1,6 +1,6 @@
 import { Middleware } from "koa";
 import StorageManager from "../../storage/StorageManager";
-import genPathGroup from "../../utils/genPathGroup";
+import genPathGroup from "../../../utils/genPathGroup";
 
 const DELETE: Middleware = async (ctx, next) => {
   const pathGroup = genPathGroup(ctx.url)

@@ -1,5 +1,5 @@
 import { Middleware } from "koa";
-import { renderPROPFIND } from '../../template';
+import { renderPROPFIND } from './template';
 import StorageManager from '../../storage/StorageManager';
 
 const PROPFIND: Middleware = async (ctx) => {

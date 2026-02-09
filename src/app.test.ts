@@ -43,7 +43,7 @@ describeApp("e2e", (address) => {
       const str = await client.getFileContents("/newFile.txt", { format: "text" })
       expect(str).toBe('Hello World')
 
-      const newFilePath = path.resolve(localTestRootStorage.toJSON().device.path, './newFile.txt')
+      const newFilePath = path.resolve(localTestRootStorage.device.path, './newFile.txt')
       expect(newFilePath).toBeFileExist()
       expect(newFilePath).toBeFileContent('Hello World')
     })

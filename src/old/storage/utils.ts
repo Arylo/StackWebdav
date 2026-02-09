@@ -3,7 +3,7 @@ import fs from 'fs'
 import lodash from 'lodash';
 import { asyncLocalStorage } from './asyncLocalStorage';
 import { AsyncLocalStorageStore } from './type.d';
-import * as settings from '../settings'
+import * as settings from '../../storages/common/settings'
 import Storage from './Storage';
 
 export type Fn = () => any

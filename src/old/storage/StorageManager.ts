@@ -1,8 +1,8 @@
 import getPassedStorages from "./getPassedStorages"
 import genResourcePath from '../utils/ResourcePath'
-import Result, { RESULT_STATUS } from "./Result"
+import Result, { RESULT_STATUS } from "../../utils/Result"
 import Status from 'http-status'
-import PathGroup from "../utils/PathGroup"
+import PathGroup from "../../utils/PathGroup"
 import { getStorages } from "./utils"
 
 export type GETOptions = {
