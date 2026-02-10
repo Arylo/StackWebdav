@@ -215,20 +215,26 @@ describe('webdav methods', () => {
     expect(ctx.status).toBe(201)
   })
 
-  it('MOVE rejects cross-mount', async () => {
-    const adapterA = createAdapter()
-    const adapterB = createAdapter()
+  it('MOVE across adapters succeeds (cross-mount)', async () => {
+    const adapterA = createAdapter({
+      stat: vi.fn().mockResolvedValue({ exists: true, isDirectory: false }),
+      read: vi.fn().mockResolvedValue(new Uint8Array([1]))
+    })
+    const adapterB = createAdapter({
+      write: vi.fn().mockResolvedValue(undefined)
+    })
     const ctx = makeCtx({
       params: { path: 'a.txt' },
-      get: (key: string) => (key === 'Destination' ? '/webdav/b.txt' : '')
+      path: '/webdav/a.txt',
+      get: (key: string) => (key === 'Destination' ? '/webdav/b/file.txt' : '')
     })
     ctx.state.webdavMounts = [
-      { mount: '/a', adapter: adapterA },
+      { mount: '/', adapter: adapterA },
       { mount: '/b', adapter: adapterB }
     ]
 
     await moveHandler()(ctx)
-    expect(ctx.status).toBe(409)
+    expect(ctx.status).toBe(201)
   })
 
   it('MOVE returns 400 when Destination missing', async () => {
@@ -252,20 +258,77 @@ describe('webdav methods', () => {
     expect(ctx.status).toBe(201)
   })
 
-  it('COPY rejects cross-mount', async () => {
-    const adapterA = createAdapter()
-    const adapterB = createAdapter()
+  it('COPY across adapters succeeds (cross-mount)', async () => {
+    const adapterA = createAdapter({
+      stat: vi.fn().mockResolvedValue({ exists: true, isDirectory: false }),
+      read: vi.fn().mockResolvedValue(new Uint8Array([1]))
+    })
+    const adapterB = createAdapter({
+      write: vi.fn().mockResolvedValue(undefined)
+    })
     const ctx = makeCtx({
       params: { path: 'a.txt' },
-      get: (key: string) => (key === 'Destination' ? '/webdav/b.txt' : '')
+      path: '/webdav/a.txt',
+      get: (key: string) => (key === 'Destination' ? '/webdav/b/file.txt' : '')
     })
     ctx.state.webdavMounts = [
-      { mount: '/a', adapter: adapterA },
+      { mount: '/', adapter: adapterA },
       { mount: '/b', adapter: adapterB }
     ]
 
     await copyHandler()(ctx)
-    expect(ctx.status).toBe(409)
+    expect(ctx.status).toBe(201)
+  })
+
+  it('MOVE across adapters copies then deletes', async () => {
+    const adapterA = createAdapter({
+      stat: vi.fn().mockResolvedValue({ exists: true, isDirectory: false }),
+      read: vi.fn().mockResolvedValue(new Uint8Array([1, 2])),
+      delete: vi.fn().mockResolvedValue(undefined)
+    })
+    const adapterB = createAdapter({
+      write: vi.fn().mockResolvedValue(undefined)
+    })
+
+    const ctx = makeCtx({
+      params: { path: 'a.txt' },
+      path: '/webdav/a.txt',
+      get: (key: string) => (key === 'Destination' ? '/webdav/b/file.txt' : '')
+    })
+    ctx.state.webdavMounts = [
+      { mount: '/', adapter: adapterA },
+      { mount: '/b', adapter: adapterB }
+    ]
+
+    await moveHandler()(ctx)
+    expect(adapterB.write).toHaveBeenCalled()
+    expect(adapterA.delete).toHaveBeenCalled()
+    expect(ctx.status).toBe(201)
+  })
+
+  it('COPY across adapters copies without delete', async () => {
+    const adapterA = createAdapter({
+      stat: vi.fn().mockResolvedValue({ exists: true, isDirectory: false }),
+      read: vi.fn().mockResolvedValue(new Uint8Array([3, 4]))
+    })
+    const adapterB = createAdapter({
+      write: vi.fn().mockResolvedValue(undefined)
+    })
+
+    const ctx = makeCtx({
+      params: { path: 'a.txt' },
+      path: '/webdav/a.txt',
+      get: (key: string) => (key === 'Destination' ? '/webdav/b/file.txt' : '')
+    })
+    ctx.state.webdavMounts = [
+      { mount: '/', adapter: adapterA },
+      { mount: '/b', adapter: adapterB }
+    ]
+
+    await copyHandler()(ctx)
+    expect(adapterB.write).toHaveBeenCalled()
+    expect(adapterA.delete).not.toHaveBeenCalled()
+    expect(ctx.status).toBe(201)
   })
 
   it('COPY returns 400 when Destination missing', async () => {

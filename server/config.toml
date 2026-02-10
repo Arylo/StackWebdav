@@ -1,7 +1,0 @@
-# WebDAV adapters configuration
-# Example:
-# [[adapters]]
-# mount = "/"
-# type = "local"
-# [adapters.options]
-# root = "/path/to/root"

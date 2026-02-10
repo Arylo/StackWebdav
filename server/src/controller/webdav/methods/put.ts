@@ -1,11 +1,11 @@
 import type { Context } from 'koa'
 import { getMounts } from '../getMounts'
-import { findMount, normalizeWebdavPath, readRequestBody, toAdapterPath } from '../utils'
+import { findMount, getRequestSubpath, readRequestBody, toAdapterPath } from '../utils'
 
 export function putHandler() {
   return async (ctx: Context) => {
     const mounts = await getMounts(ctx)
-    const webdavPath = normalizeWebdavPath(ctx.params.path)
+    const webdavPath = getRequestSubpath(ctx)
     const match = findMount(mounts, webdavPath)
     if (!match) {
       ctx.status = 404

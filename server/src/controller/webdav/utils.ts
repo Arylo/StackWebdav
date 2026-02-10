@@ -7,6 +7,15 @@ export function normalizeWebdavPath(rawPath: string | undefined) {
   return decodeURIComponent(p)
 }
 
+export function getRequestSubpath(ctx: Context) {
+  const raw = (ctx.state?.webdavSubpath as string | undefined) ?? ctx.params?.path
+  return normalizeWebdavPath(raw)
+}
+
+export function getRequestSubpathRaw(ctx: Context) {
+  return (ctx.state?.webdavSubpath as string | undefined) ?? (ctx.params?.path ? `/${ctx.params.path}` : '/')
+}
+
 export function toAdapterPath(webdavPath: string) {
   if (webdavPath === '/' || webdavPath === '') return '.'
   return webdavPath.replace(/^\/+/, '')
@@ -112,8 +121,8 @@ export function getDestinationPath(ctx: Context) {
 }
 
 export function normalizeDestinationForMount(ctx: Context, destPath: string) {
-  const srcWebdav = normalizeWebdavPath(ctx.params?.path)
-  const basePrefix = ctx.path.slice(0, Math.max(0, ctx.path.length - srcWebdav.length))
+  const srcWebdavRaw = getRequestSubpathRaw(ctx)
+  const basePrefix = ctx.path.slice(0, Math.max(0, ctx.path.length - srcWebdavRaw.length))
   let normalized = destPath
   if (normalized.startsWith(basePrefix)) {
     normalized = normalized.slice(basePrefix.length)

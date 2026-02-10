@@ -3,15 +3,15 @@ import { getMounts } from '../getMounts'
 import {
   buildPropfindResponse,
   findMount,
+  getRequestSubpath,
   getVirtualChildren,
-  normalizeWebdavPath,
   toAdapterPath
 } from '../utils'
 
 export function propfindHandler() {
   return async (ctx: Context) => {
     const mounts = await getMounts(ctx)
-    const webdavPath = normalizeWebdavPath(ctx.params.path)
+    const webdavPath = getRequestSubpath(ctx)
     const depth = ctx.get('Depth') || '1'
     const base = ctx.path.replace(/\/$/, '')
 

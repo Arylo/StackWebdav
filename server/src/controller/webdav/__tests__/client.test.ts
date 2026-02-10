@@ -7,6 +7,7 @@ import { createClient } from 'webdav'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { LocalAdapter } from '../../../adapters/LocalAdapter'
 import { createWebdavRouter } from '../index'
+import { webdavPathMiddleware } from '../pathMiddleware'
 
 describe('webdav-client integration', () => {
   let root: string
@@ -17,6 +18,7 @@ describe('webdav-client integration', () => {
   async function startServerWithMounts(mounts: { mount: string; root: string }[]) {
     const tempApp = new Koa()
     const tempRouter = new Router()
+    const basePath = '/webdav'
 
     tempRouter.use(async (ctx, next) => {
       ctx.state.webdavMounts = mounts.map((m) => ({ mount: m.mount, adapter: new LocalAdapter({ root: m.root }) }))
@@ -24,7 +26,7 @@ describe('webdav-client integration', () => {
     })
 
     const webdavRouter = createWebdavRouter()
-    tempRouter.use('/webdav', webdavRouter.routes(), webdavRouter.allowedMethods())
+    tempRouter.use(basePath, webdavPathMiddleware(basePath), webdavRouter.routes(), webdavRouter.allowedMethods())
     tempApp.use(tempRouter.routes()).use(tempRouter.allowedMethods())
 
     let tempServer: any
@@ -46,6 +48,7 @@ describe('webdav-client integration', () => {
 
     app = new Koa()
     const router = new Router()
+    const basePath = '/webdav'
 
     router.use(async (ctx, next) => {
       ctx.state.webdavMounts = [{ mount: '/', adapter: new LocalAdapter({ root }) }]
@@ -53,7 +56,7 @@ describe('webdav-client integration', () => {
     })
 
     const webdavRouter = createWebdavRouter()
-    router.use('/webdav', webdavRouter.routes(), webdavRouter.allowedMethods())
+    router.use(basePath, webdavPathMiddleware(basePath), webdavRouter.routes(), webdavRouter.allowedMethods())
 
     app.use(router.routes()).use(router.allowedMethods())
 

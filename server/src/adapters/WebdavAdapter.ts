@@ -5,24 +5,24 @@ export type WebdavAdapterOptions = {
   url: string
   username?: string
   password?: string
-  remoteRoot?: string
+  prefix?: string
 }
 
 export class WebdavAdapter implements StorageAdapter {
   private client: WebDAVClient
-  private remoteRoot: string
+  private prefix: string
 
   constructor(opts: WebdavAdapterOptions) {
     this.client = createClient(opts.url, {
       username: opts.username,
       password: opts.password
     })
-    this.remoteRoot = opts.remoteRoot ?? '/'
+    this.prefix = opts.prefix ?? '/'
   }
 
   private resolve(p: string) {
     const rel = p === '/' || p === '' ? '' : p.replace(/^\/+/, '')
-    const base = this.remoteRoot.replace(/\/$/, '') || '/'
+    const base = this.prefix.replace(/\/$/, '') || '/'
     if (base === '/') return `/${rel}`.replace(/\/+/g, '/')
     return `${base}/${rel}`.replace(/\/+/g, '/')
   }

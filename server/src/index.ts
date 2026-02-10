@@ -2,23 +2,23 @@ import Koa from 'koa'
 import Router from '@koa/router'
 import { createWebdavRouter } from './controller/webdav'
 import { loadWebdavConfig, webdavMountsMiddleware } from './controller/webdav/config'
+import { webdavPathMiddleware } from './controller/webdav/pathMiddleware'
+import { accessLogMiddleware } from './middlewares/accessLog'
 
 const app = new Koa()
 const router = new Router()
 
-// access log
-app.use(async (ctx, next) => {
-  const start = Date.now()
-  try {
-    await next()
-  } finally {
-    const ms = Date.now() - start
-    console.log(`${ctx.method} ${ctx.status} ${ctx.path} - ${ms}ms`)
-  }
-})
+app.use(accessLogMiddleware())
 
 const webdavRouter = createWebdavRouter()
-router.use('/webdav', webdavMountsMiddleware(), webdavRouter.routes(), webdavRouter.allowedMethods())
+const webdavBasePath = '/webdav'
+router.use(
+  webdavBasePath,
+  webdavPathMiddleware(webdavBasePath),
+  webdavMountsMiddleware(),
+  webdavRouter.routes(),
+  webdavRouter.allowedMethods()
+)
 
 app.use(router.routes()).use(router.allowedMethods())
 

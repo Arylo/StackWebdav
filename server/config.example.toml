@@ -1,0 +1,44 @@
+# WebDAV adapters configuration
+# Example:
+# [[adapters]]
+# mount = "/"
+# type = "local"
+# [adapters.options]
+# root = "/path/to/root"
+
+# Azure Blob example (connection string)
+# [[adapters]]
+# mount = "/azure"
+# type = "azure"
+# [adapters.options]
+# connectionString = "DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net"
+# containerName = "my-container"
+# prefix = "optional/prefix"
+
+# Azure Blob example (account url + sas token)
+# [[adapters]]
+# mount = "/azure-sas"
+# type = "azure"
+# [adapters.options]
+# accountUrl = "https://<account>.blob.core.windows.net"
+# sasToken = "<sas-token>"
+# containerName = "my-container"
+
+# Azure Blob example (account name + key)
+# [[adapters]]
+# mount = "/azure-key"
+# type = "azure"
+# [adapters.options]
+# accountName = "<account>"
+# accountKey = "<key>"
+# containerName = "my-container"
+
+# WebDAV adapter example
+# [[adapters]]
+# mount = "/remote"
+# type = "webdav"
+# [adapters.options]
+# url = "https://example.com/webdav"
+# username = "user"
+# password = "pass"
+# remoteRoot = "/"
